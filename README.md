@@ -1,4 +1,4 @@
-# CS222 Final — LLM Tool-Calling Evaluation Pipeline
+# LLM Tool-Calling Evaluation Pipeline
 
 Đánh giá khả năng tool-calling của các LLM trên 3 benchmark, với 5 chiến lược enhancement + baseline + enhanced mode.
 
