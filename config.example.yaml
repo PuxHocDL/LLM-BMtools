@@ -1,0 +1,69 @@
+# ============================================================
+# CONFIG EXAMPLE — Copy thành config.yaml rồi điền thông tin
+# cp config.example.yaml config.yaml
+# ============================================================
+
+agents:
+
+  # ── [Tên]: Qwen ──────────────────────────────────────────
+  qwen:
+    model: Qwen/Qwen3.5-35B-A3B
+    api_base: https://YOUR_MODAL_URL/v1          # <-- ĐIỀN VÀO
+    api_key: sk-mgpux-XXXXXXXX                   # <-- ĐIỀN VÀO
+    temperature: 0.0
+    max_steps: 16
+    timeout: 30.0
+
+  # ── [Tên]: Gemma ─────────────────────────────────────────
+  gemma:
+    model: google/gemma-4-31b
+    api_base: https://YOUR_MODAL_URL/v1          # <-- ĐIỀN VÀO
+    api_key: sk-mgpux-XXXXXXXX                   # <-- ĐIỀN VÀO
+    temperature: 0.0
+    max_steps: 16
+    timeout: 30.0
+
+  # ── [Tên]: GLM ───────────────────────────────────────────
+  glm:
+    model: zai-org/GLM-4.7-Flash
+    api_base: https://YOUR_MODAL_URL/v1          # <-- ĐIỀN VÀO
+    api_key: sk-mgpux-XXXXXXXX                   # <-- ĐIỀN VÀO
+    temperature: 0.0
+    max_steps: 16
+    timeout: 30.0
+
+  # ── [Tên]: LFM ───────────────────────────────────────────
+  lfm:
+    model: LiquidAI/LFM2-24B-A2B
+    api_base: https://YOUR_MODAL_URL/v1          # <-- ĐIỀN VÀO
+    api_key: sk-mgpux-XXXXXXXX                   # <-- ĐIỀN VÀO
+    temperature: 0.0
+    max_steps: 16
+    timeout: 30.0
+
+  # ── [Tên]: Nemotron ──────────────────────────────────────
+  nemotron:
+    model: nvidia/Nemotron-Cascade-2-16B-A3B
+    api_base: https://YOUR_MODAL_URL/v1          # <-- ĐIỀN VÀO
+    api_key: sk-mgpux-XXXXXXXX                   # <-- ĐIỀN VÀO
+    temperature: 0.0
+    max_steps: 16
+    timeout: 30.0
+
+  # ── [Tên]: Llama ─────────────────────────────────────────
+  llama:
+    model: meta-llama/Meta-Llama-3.1-70B-Instruct
+    api_base: https://YOUR_MODAL_URL/v1          # <-- ĐIỀN VÀO
+    api_key: sk-mgpux-XXXXXXXX                   # <-- ĐIỀN VÀO
+    temperature: 0.0
+    max_steps: 16
+    timeout: 30.0
+
+  # ── [Tên]: GPT-4o ────────────────────────────────────────
+  gpt-4o:
+    model: gpt-4o
+    api_base: https://api.openai.com/v1
+    api_key: sk-proj-XXXXXXXX                    # <-- ĐIỀN VÀO
+    temperature: 0.0
+    max_steps: 16
+    timeout: 30.0
