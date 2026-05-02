@@ -158,23 +158,67 @@ class JSONPruner:
             return filtered
         return None
 
+    MAX_OUTPUT_CHARS = 6000
+
     @classmethod
-    def prune(cls, json_str, query, top_k=50):
+    def _truncate_output(cls, text):
+        if len(text) <= cls.MAX_OUTPUT_CHARS:
+            return text
+        return text[:cls.MAX_OUTPUT_CHARS] + "\n... (truncated)"
+
+    @classmethod
+    def _filter_by_api_query(cls, records, api_query):
+        """Pre-filter records to only those matching the api_query scope."""
+        if not api_query:
+            return records
+        try:
+            query_obj = json.loads(api_query) if isinstance(api_query, str) else api_query
+        except Exception:
+            return records
+        if not isinstance(query_obj, dict) or not query_obj:
+            return records
+
+        filtered = []
+        for path, record in records:
+            match = True
+            for qk, qv in query_obj.items():
+                qv_lower = str(qv).lower()
+                # Check if the query value appears in the record path or any record value
+                path_lower = path.lower()
+                if qv_lower in path_lower:
+                    continue
+                record_vals = [str(v).lower() for v in record.values()]
+                if any(qv_lower in rv for rv in record_vals):
+                    continue
+                # Also check parent path segments (e.g., path contains the identifier)
+                match = False
+                break
+            if match:
+                filtered.append((path, record))
+
+        return filtered if filtered else records
+
+    @classmethod
+    def prune(cls, json_str, query, top_k=15, api_query=None):
         try:
             data = json.loads(json_str)
         except Exception:
-            return json_str
+            return json_str[:cls.MAX_OUTPUT_CHARS]
 
         keywords = cls._extract_query_keywords(query)
         records = cls._collect_leaf_records(data)
-        
+
         if not records:
-            return json_str[:8000]
-        
+            return json_str[:cls.MAX_OUTPUT_CHARS]
+
+        # Pre-filter by api_query scope (e.g., only JNJ records)
+        if api_query:
+            records = cls._filter_by_api_query(records, api_query)
+
         # Route to different strategy based on query type
         if cls._is_aggregation_query(query):
-            return cls._build_aggregation_summary(records, query, keywords)
-        
+            return cls._truncate_output(cls._build_aggregation_summary(records, query, keywords))
+
         # === LOOKUP strategy: find specific records ===
         scored = []
         for path, record in records:
@@ -182,21 +226,21 @@ class JSONPruner:
             full_text = path + " " + record_text
             score = cls._score_text(full_text, keywords)
             scored.append((score, path, record))
-        
+
         scored.sort(key=lambda x: (-x[0], len(x[1])))
-        
+
         top_records = [(p, r) for s, p, r in scored[:top_k] if s > 0]
-        
+
         if not top_records:
             top_records = [(p, r) for _, p, r in scored[:top_k]]
-        
+
         output_records = []
         for path, record in top_records:
             entry = {"_path": path}
             entry.update(record)
             output_records.append(entry)
-        
-        return json.dumps(output_records, indent=2)
+
+        return cls._truncate_output(json.dumps(output_records, indent=2))
 
 
 class SemanticToolRetriever:

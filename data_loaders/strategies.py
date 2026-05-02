@@ -110,8 +110,9 @@ class S1_ToolJSON(ToolJSONLoader):
 
     def format_prompt(self, sample):
         question = sample.get("question", "")
+        api_query = sample.get("api_query", "")
         raw_json = _load_json_for_tooljson(sample, self.base_repo_dir)
-        json_content = JSONPruner.prune(raw_json, question, top_k=50)
+        json_content = JSONPruner.prune(raw_json, question, top_k=15, api_query=api_query)
 
         prompt = (
             "You are a data extraction assistant. Given API response data and a question, "
@@ -119,6 +120,10 @@ class S1_ToolJSON(ToolJSONLoader):
             "- If the answer is a number, output just the number.\n"
             "- If the answer is a name/type/date, output just that value.\n"
             "- If multiple values, output comma-separated.\n\n"
+        )
+        if api_query:
+            prompt += f"API Query Context: {api_query}\n"
+        prompt += (
             f"Data:\n{json_content}\n\n"
             f"Question: {question}\n"
             "Answer:"
@@ -225,10 +230,14 @@ class S2_ToolJSON(ToolJSONLoader):
 
     def format_prompt(self, sample):
         question = sample.get("question", "")
+        api_query = sample.get("api_query", "")
         raw_json = _load_json_for_tooljson(sample, self.base_repo_dir)
-        json_content = JSONPruner.prune(raw_json, question, top_k=50)
+        json_content = JSONPruner.prune(raw_json, question, top_k=15, api_query=api_query)
 
-        prompt = (
+        prompt = ""
+        if api_query:
+            prompt += f"API Query Context: {api_query}\n"
+        prompt += (
             f"Data:\n{json_content}\n\n"
             f"Question: {question}\n"
             "Answer with ONLY the value, nothing else:"
@@ -298,10 +307,14 @@ class S3_ToolJSON(ToolJSONLoader):
 
     def format_prompt(self, sample):
         question = sample.get("question", "")
+        api_query = sample.get("api_query", "")
         raw_json = _load_json_for_tooljson(sample, self.base_repo_dir)
-        json_content = JSONPruner.prune(raw_json, question, top_k=50)
+        json_content = JSONPruner.prune(raw_json, question, top_k=15, api_query=api_query)
 
-        prompt = (
+        prompt = ""
+        if api_query:
+            prompt += f"API Query Context: {api_query}\n"
+        prompt += (
             f"Data:\n{json_content}\n\n"
             f"Question: {question}\n\n"
             "Think step by step:\n"
@@ -446,11 +459,15 @@ class S4_ToolJSON(ToolJSONLoader):
 
     def format_prompt(self, sample):
         question = sample.get("question", "")
+        api_query = sample.get("api_query", "")
         raw_json = _load_json_for_tooljson(sample, self.base_repo_dir)
-        pruned = JSONPruner.prune(raw_json, question, top_k=50)
+        pruned = JSONPruner.prune(raw_json, question, top_k=15, api_query=api_query)
 
         # Stage 1: Ask LLM to extract just the relevant data
-        stage1_prompt = (
+        stage1_prompt = ""
+        if api_query:
+            stage1_prompt += f"API Query Context: {api_query}\n"
+        stage1_prompt += (
             f"Data:\n{pruned}\n\n"
             f"Question: {question}\n\n"
             "Extract ONLY the data records or values needed to answer this question. "
@@ -552,16 +569,110 @@ class S5_ToolJSON(ToolJSONLoader):
 
     def format_prompt(self, sample):
         question = sample.get("question", "")
+        api_query = sample.get("api_query", "")
         raw_json = _load_json_for_tooljson(sample, self.base_repo_dir)
-        json_content = JSONPruner.prune(raw_json, question, top_k=50)
+        json_content = JSONPruner.prune(raw_json, question, top_k=15, api_query=api_query)
 
-        prompt = (
-            "You are a data extraction assistant.\n\n"
+        prompt = "You are a data extraction assistant.\n\n"
+        prompt += (
             "--- EXAMPLE ---\n"
             f"Data: {_TOOLJSON_EXAMPLE['data']}\n"
             f"Question: {_TOOLJSON_EXAMPLE['question']}\n"
             f"Answer: {_TOOLJSON_EXAMPLE['answer']}\n"
             "--- END EXAMPLE ---\n\n"
+        )
+        if api_query:
+            prompt += f"API Query Context: {api_query}\n"
+        prompt += (
+            f"Data:\n{json_content}\n\n"
+            f"Question: {question}\n"
+            "Answer:"
+        )
+        return [{"role": "user", "content": prompt}]
+
+
+# =============================================================================
+# STRATEGY 6: Context-Aware Pipeline
+# =============================================================================
+
+class S6_ToolBench(ToolBenchLoader):
+    """Context-Aware: S1 prompt rewrite (best performer) + query-scoped context."""
+    def format_prompt(self, sample):
+        messages = sample.get("messages", [])
+        filtered_messages = []
+        for msg in messages:
+            role = msg.get("role", "user")
+            content = msg.get("content", "")
+            role, content = _sanitize_role(role, content)
+            if role == "assistant" and not content.strip():
+                continue
+            if role == "system":
+                content += "\n\nOUTPUT FORMAT: You MUST respond in EXACTLY this format, nothing else:\nThought: <your reasoning about which tool to use and why>\nAction: <exact tool name from the list above>\nAction Input: <valid JSON object with the required parameters>"
+            filtered_messages.append({"role": role, "content": content})
+        return filtered_messages
+
+
+class S6_ComplexFunc(ComplexFuncLoader):
+    """Context-Aware: S1 prompt rewrite (best performer)."""
+    def format_prompt(self, sample):
+        conversations = sample.get("conversations", [])
+        functions = sample.get("functions", [])
+
+        system_content = "You are a function-calling AI assistant.\n"
+        if functions:
+            system_content += "Available Functions:\n" + json.dumps(functions, indent=2) + "\n\n"
+        system_content += (
+            "Instructions:\n"
+            "1. Read the user request carefully.\n"
+            "2. Identify which function(s) to call and with what arguments.\n"
+            "3. Output ONLY a JSON array of function calls. No explanation.\n"
+            "Format: [{\"name\": \"function_name\", \"arguments\": {\"param\": \"value\"}}]\n"
+        )
+
+        messages = [{"role": "system", "content": system_content}]
+        for msg in conversations:
+            role = "user" if msg.get("from", msg.get("role")) in ["user", "human"] else "assistant"
+            content = msg.get("value", msg.get("content", ""))
+            if role == "assistant":
+                break
+            messages.append({"role": role, "content": content})
+        return messages
+
+
+class S6_ToolJSON(ToolJSONLoader):
+    """Context-Aware: task-type routing + query-scoped pruning."""
+    stop_sequences = []
+
+    _TASK_PROMPTS = {
+        "EXTRACTIVE": (
+            "You are a data extraction assistant.\n"
+            "Given the API response data below, find the EXACT value that answers the question.\n"
+            "Output ONLY the value itself — no explanation, no full sentences.\n\n"
+        ),
+        "AGGREGATION": (
+            "You are a data analysis assistant.\n"
+            "Given the data summary below, count the records that match the question's conditions.\n"
+            "Output ONLY the number — no explanation, no units, no sentences.\n\n"
+        ),
+        "FILTERING": (
+            "You are a data extraction assistant.\n"
+            "Given the API response data below, find all unique values that match the question's conditions.\n"
+            "Output ONLY the values as a comma-separated list, sorted alphabetically.\n"
+            "Example format: A, B, C, D\n\n"
+        ),
+    }
+
+    def format_prompt(self, sample):
+        question = sample.get("question", "")
+        api_query = sample.get("api_query", "")
+        task_type = sample.get("task_type", "EXTRACTIVE")
+        raw_json = _load_json_for_tooljson(sample, self.base_repo_dir)
+        json_content = JSONPruner.prune(raw_json, question, top_k=15, api_query=api_query)
+
+        prompt = self._TASK_PROMPTS.get(task_type, self._TASK_PROMPTS["EXTRACTIVE"])
+        if api_query:
+            prompt += f"API Query Context: {api_query}\n"
+        prompt += (
             f"Data:\n{json_content}\n\n"
             f"Question: {question}\n"
             "Answer:"
@@ -602,5 +713,11 @@ STRATEGIES = {
         "complexfunc": S5_ComplexFunc,
         "tooljson": S5_ToolJSON,
         "label": "Strategy 5: Few-Shot Examples",
+    },
+    "s6_context": {
+        "toolbench": S6_ToolBench,
+        "complexfunc": S6_ComplexFunc,
+        "tooljson": S6_ToolJSON,
+        "label": "Strategy 6: Context-Aware Pipeline",
     },
 }

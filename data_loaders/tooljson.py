@@ -1,6 +1,7 @@
 import json
 import os
 from .base_loader import BaseLoader
+from core.enhancers import JSONPruner
 
 class ToolJSONLoader(BaseLoader):
     stop_sequences = []  # No stop sequences for QA-style responses
@@ -28,23 +29,23 @@ class ToolJSONLoader(BaseLoader):
 
     def format_prompt(self, sample):
         question = sample.get("question", "")
+        api_query = sample.get("api_query", "")
         api_response_path = sample.get("api_response_path", "")
-        
-        # Fix path for Windows if necessary
-        # Bỏ đi tiền tố ../api_responses/ hoặc tương tự
-        # Chúng ta giả định api_response_path có thể được đọc từ base_repo_dir
+
         api_res_full_path = os.path.join(self.base_repo_dir, "generate_qa_pairs", "data", "api_responses", os.path.basename(api_response_path))
-        # Handle the ? character which was replaced with _ in our script
         api_res_full_path = api_res_full_path.replace("?", "_").replace(":", "_").replace('"', "_")
-        
+
         json_content = ""
         try:
             with open(api_res_full_path, 'r', encoding='utf-8') as f:
-                json_content = f.read()
+                raw_json = f.read()
+                json_content = JSONPruner.prune(raw_json, question, top_k=15, api_query=api_query)
         except Exception as e:
             json_content = f"<Error loading JSON: {e}>"
 
         prompt = "Analyze the following JSON output to answer the user's question.\n"
+        if api_query:
+            prompt += f"API Query Context: {api_query}\n"
         prompt += f"JSON Output:\n{json_content}\n\n"
         prompt += f"Question:\n{question}\n"
         prompt += "Answer directly based on the JSON content."

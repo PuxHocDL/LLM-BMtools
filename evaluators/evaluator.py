@@ -11,7 +11,7 @@ class Evaluator:
         self.data_loader = data_loader
         self.agent_name = agent_name
         self.client = LLMClient(agent_name=agent_name)
-        self.judge_client = LLMClient(agent_name=judge_name)
+        self.judge_client = self.client if judge_name == agent_name else LLMClient(agent_name=judge_name)
 
     def _process_single_sample(self, i, sample):
         prompt = self.data_loader.format_prompt(sample)
@@ -60,10 +60,22 @@ class Evaluator:
             res["rougeL"] = rouge["rougeL"]
             res["action_match"] = Metrics.action_match(prediction, ground_truth)
             
-            try:
-                res["llm_judge"] = Metrics.llm_as_judge(prediction, ground_truth, question, self.judge_client)
-            except Exception as e:
-                res["error"] = str(e)
+            judge_pred = prediction[:1000] if len(prediction) > 1000 else prediction
+            judge_gt = ground_truth[:500] if len(ground_truth) > 500 else ground_truth
+            judge_q = question[:500] if len(question) > 500 else question
+            for judge_attempt in range(2):
+                try:
+                    res["llm_judge"] = Metrics.llm_as_judge(judge_pred, judge_gt, judge_q, self.judge_client)
+                    break
+                except Exception as e:
+                    import traceback as tb
+                    tqdm.write(f"[Sample {i}] Judge attempt {judge_attempt+1} failed: {type(e).__name__}: {str(e)[:150]}")
+                    if judge_attempt == 0:
+                        tb.print_exc()
+                    if judge_attempt == 1:
+                        res["error"] = f"LLM Judge failed: {e}"
+                    else:
+                        time.sleep(2)
             
             total_elapsed = time.time() - start_time
             tqdm.write(f"[Sample {i}] Done ({total_elapsed:.1f}s) | EM={res['exact_match']} F1={res['f1_score']:.2f} Judge={res['llm_judge']}")
@@ -101,8 +113,7 @@ class Evaluator:
         
         with ThreadPoolExecutor(max_workers=workers) as executor:
             futures = {executor.submit(self._process_single_sample, i, sample): i for i, sample in enumerate(data)}
-            # Scale timeout: ~60s per batch of workers, minimum 300s
-            total_timeout = max(300, (len(data) / max(workers, 1)) * 60)
+            total_timeout = max(600, (len(data) / max(workers, 1)) * 300)
             for future in tqdm(as_completed(futures, timeout=total_timeout), total=len(data)):
                 try:
                     res = future.result(timeout=30)

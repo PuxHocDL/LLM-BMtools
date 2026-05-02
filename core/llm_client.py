@@ -3,7 +3,6 @@ from openai import OpenAI
 import httpx
 import os
 import time
-import concurrent.futures
 
 class LLMClient:
     def __init__(self, config_path="config.yaml", agent_name="qwen"):
@@ -21,26 +20,16 @@ class LLMClient:
         self.max_steps = agent_cfg.get("max_steps", 30)
         self.timeout = agent_cfg.get("timeout", 30.0)
 
-        # Initialize OpenAI client with both per-operation and total timeout
         self.client = OpenAI(
             api_key=self.api_key,
             base_url=self.api_base,
-            timeout=httpx.Timeout(self.timeout, connect=5.0),
+            timeout=httpx.Timeout(self.timeout, connect=10.0),
             max_retries=0
         )
 
     def _call_api(self, **kwargs):
-        """Call API with a hard total timeout to prevent hanging."""
-        pool = concurrent.futures.ThreadPoolExecutor(max_workers=1)
-        future = pool.submit(self.client.chat.completions.create, **kwargs)
-        try:
-            return future.result(timeout=self.timeout)
-        except (TimeoutError, concurrent.futures.TimeoutError):
-            future.cancel()
-            pool.shutdown(wait=False, cancel_futures=True)
-            raise TimeoutError(f"API call exceeded hard timeout of {self.timeout}s")
-        finally:
-            pool.shutdown(wait=False)
+        """Call API — timeout is handled by httpx."""
+        return self.client.chat.completions.create(**kwargs)
 
     def generate(self, prompt_or_messages, system_message="You are a helpful assistant.", max_retries=1, stop=None, enable_thinking=False):
         if isinstance(prompt_or_messages, str):
@@ -58,9 +47,10 @@ class LLMClient:
             model=self.model_name,
             messages=messages,
             temperature=max(self.temperature, 0.6) if enable_thinking else self.temperature,
-            max_tokens=512,
-            extra_body={"chat_template_kwargs": {"enable_thinking": enable_thinking}},
+            max_tokens=1024,
         )
+        if enable_thinking:
+            kwargs["extra_body"] = {"chat_template_kwargs": {"enable_thinking": True}}
         if stop:
             kwargs["stop"] = stop
             
@@ -78,7 +68,8 @@ class LLMClient:
                     return f"__ERROR_API__: {err_str}"
                 time.sleep(2 ** attempt) # Exponential backoff: 1s, 2s, 4s...
             
-    def generate_json(self, prompt, system_message="You are a helpful assistant. Respond in JSON format.", max_retries=1):
+    def generate_json(self, prompt, system_message="You are a helpful assistant. Respond in JSON format.", max_retries=3):
+        last_err = None
         for attempt in range(max_retries):
             try:
                 response = self._call_api(
@@ -94,9 +85,10 @@ class LLMClient:
                 content = response.choices[0].message.content
                 return content if content is not None else "{}"
             except Exception as e:
+                last_err = e
                 err_str = str(e)
                 if "400" in err_str and "context length" in err_str.lower():
-                    return "{}"
+                    raise ValueError(f"Context length exceeded in generate_json: {err_str}")
                 if attempt == max_retries - 1:
-                    return "{}"
+                    raise ValueError(f"generate_json failed after {max_retries} retries: {err_str}")
                 time.sleep(2 ** attempt)

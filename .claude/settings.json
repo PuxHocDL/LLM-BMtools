@@ -1,0 +1,14 @@
+{
+  "env": {
+    "ANTHROPIC_BASE_URL": "https://chat.trollllm.xyz",
+    "ANTHROPIC_AUTH_TOKEN": "sk-trollllm-eb5cd904c9bea1d5f5df7fb3674887ff2af7f3ead595c1537646a962c4678837",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "claude-sonnet-4.6",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "claude-opus-4.6",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "claude-haiku-4.5",
+    "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC": "1"
+  },
+  "permissions": {
+    "defaultMode": "bypassPermissions"
+  },
+  "alwaysThinkingEnabled": true
+}

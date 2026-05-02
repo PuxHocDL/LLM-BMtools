@@ -21,14 +21,16 @@ def main():
     parser = argparse.ArgumentParser(description="LLM Evaluation Pipeline")
     parser.add_argument("--dataset", type=str, required=True, choices=["toolbench", "complexfunc", "tooljson", "all"], help="Dataset to evaluate on")
     parser.add_argument("--model", type=str, default="qwen", help="Agent model name from config.yaml")
-    parser.add_argument("--judge", type=str, default="qwen", help="Judge model name from config.yaml")
+    parser.add_argument("--judge", type=str, default=None, help="Judge model name from config.yaml (defaults to --model)")
     parser.add_argument("--limit", type=int, default=None, help="Number of samples to evaluate (for dry-run)")
-    parser.add_argument("--workers", type=int, default=15, help="Number of concurrent workers for multi-threading")
+    parser.add_argument("--workers", type=int, default=10, help="Number of concurrent workers for multi-threading")
     parser.add_argument("--enhanced", action="store_true", help="Enable Enhanced Mode (JSONPruning and Semantic Retrieval)")
     parser.add_argument("--strategy", type=str, default=None,
-                        choices=["s1_prompt", "s2_compress", "s3_cot", "s4_twostage", "s5_fewshot"],
+                        choices=["s1_prompt", "s2_compress", "s3_cot", "s4_twostage", "s5_fewshot", "s6_context"],
                         help="Enhancement strategy to use (overrides --enhanced)")
     args = parser.parse_args()
+    if args.judge is None:
+        args.judge = args.model
 
     datasets_to_run = ["toolbench", "complexfunc", "tooljson"] if args.dataset == "all" else [args.dataset]
 

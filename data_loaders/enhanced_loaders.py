@@ -54,22 +54,24 @@ class EnhancedToolJSONLoader(ToolJSONLoader):
     """
     def format_prompt(self, sample):
         question = sample.get("question", "")
+        api_query = sample.get("api_query", "")
         api_response_path = sample.get("api_response_path", "")
-        
+
         api_res_full_path = os.path.join(self.base_repo_dir, "generate_qa_pairs", "data", "api_responses", os.path.basename(api_response_path))
         api_res_full_path = api_res_full_path.replace("?", "_").replace(":", "_").replace('"', "_")
-        
+
         json_content = ""
         try:
             with open(api_res_full_path, 'r', encoding='utf-8') as f:
                 raw_json = f.read()
-                # DÙNG JSON PRUNER Ở ĐÂY!
-                json_content = JSONPruner.prune(raw_json, question, top_k=50)
+                json_content = JSONPruner.prune(raw_json, question, top_k=15, api_query=api_query)
         except Exception as e:
             json_content = f"<Error loading JSON: {e}>"
 
         prompt = "You are given processed data from an API response. Answer the question using ONLY the data provided.\n"
         prompt += "IMPORTANT: Give a short, direct answer. If it's a number, output just the number. If it's a name/type, output just that value.\n\n"
+        if api_query:
+            prompt += f"API Query Context: {api_query}\n"
         prompt += f"Data:\n{json_content}\n\n"
         prompt += f"Question: {question}\n"
         prompt += "Answer:"
