@@ -52,6 +52,9 @@ class EnhancedToolJSONLoader(ToolJSONLoader):
     Kế thừa ToolJSONLoader nhưng sử dụng JSONPruner để tránh lỗi
     Context Length Exceeded bằng cách rút gọn file JSON trước khi feed cho LLM.
     """
+    enable_thinking = False
+    max_tokens = 4096
+
     def format_prompt(self, sample):
         question = sample.get("question", "")
         api_response_path = sample.get("api_response_path", "")

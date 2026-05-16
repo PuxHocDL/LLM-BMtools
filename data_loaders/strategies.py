@@ -1,11 +1,11 @@
 """
 5 Enhancement Strategies for the Evaluation Pipeline.
 
-Strategy 1: Prompt Rewrite — Better output format instructions
-Strategy 2: Tool Compression — Keep ALL tools but compress descriptions
-Strategy 3: Chain-of-Thought — Add reasoning guidance
-Strategy 4: Two-Stage LLM — Use LLM to preprocess, then answer
-Strategy 5: Few-Shot — Add in-context examples
+Strategy 1: Prompt Rewrite -- Better output format instructions
+Strategy 2: Tool Compression -- Keep ALL tools but compress descriptions
+Strategy 3: Chain-of-Thought -- Add reasoning guidance
+Strategy 4: Two-Stage LLM -- Use LLM to preprocess, then answer
+Strategy 5: Few-Shot -- Add in-context examples
 """
 
 import json
@@ -18,7 +18,7 @@ from core.enhancers import JSONPruner, SemanticToolRetriever
 
 
 # =============================================================================
-# Helper: extract tools JSON from ToolBench system message
+# Helper functions
 # =============================================================================
 def _extract_tools_from_system(content):
     """Extract the tools JSON array from a ToolBench system message."""
@@ -56,63 +56,112 @@ def _sanitize_role(role, content):
 
 
 # =============================================================================
-# STRATEGY 1: Prompt Rewrite
+# Shared building blocks -- strategies BUILD ON TOP of baseline, not replace it
+# =============================================================================
+
+# Baseline ToolBench uses this to prevent premature give_up. ALL strategies must keep it.
+_TOOLBENCH_CRITICAL = (
+    "\n\nCRITICAL INSTRUCTION: Even if the available tools seem completely irrelevant "
+    "to the user's query, YOU MUST NOT use 'give_up_and_restart' or 'Finish'. "
+    "You MUST explore and call at least one of the available tools. "
+    "Choose the tool that might be slightly related or just pick one to explore."
+)
+
+
+def _complexfunc_base_system(functions):
+    """
+    Build the SAME system message as baseline ComplexFuncLoader.
+    Key: allows reasoning BEFORE JSON output (946/1000 baseline preds reason first = 0.632 EM).
+    Strategies that say 'Output ONLY JSON' kill reasoning and drop to 0.43 EM.
+    """
+    system_content = "You are a helpful AI assistant capable of multi-step reasoning and tool calling.\n"
+    if functions:
+        system_content += "Available Functions:\n" + json.dumps(functions, indent=2) + "\n\n"
+    system_content += (
+        "Please provide your thought process and the exact tool calls needed.\n"
+        "IMPORTANT: Your final tool calls must be inside a valid JSON array of objects "
+        'with \'name\' and \'arguments\' fields (e.g. [{"name": "func", "arguments": {"arg1": "val"}}]).'
+    )
+    return system_content
+
+
+def _complexfunc_user_messages(conversations):
+    """Build user messages from ComplexFunc conversations (stop at first assistant turn)."""
+    messages = []
+    for msg in conversations:
+        role = "user" if msg.get("from", msg.get("role")) in ["user", "human"] else "assistant"
+        if role == "assistant":
+            break
+        messages.append({"role": role, "content": msg.get("value", msg.get("content", ""))})
+    return messages
+
+
+def _toolbench_base_messages(sample):
+    """
+    Build the SAME filtered messages as baseline ToolBenchLoader + CRITICAL INSTRUCTION.
+    Baseline: sanitize roles, skip empty assistant, add CRITICAL to system msg.
+    """
+    filtered = []
+    for msg in sample.get("messages", []):
+        role = msg.get("role", "user")
+        content = msg.get("content", "")
+        role, content = _sanitize_role(role, content)
+        if role == "assistant" and not content.strip():
+            continue
+        if role == "system":
+            content += _TOOLBENCH_CRITICAL
+        filtered.append({"role": role, "content": content})
+    return filtered
+
+
+# =============================================================================
+# STRATEGY 1: Prompt Rewrite -- stricter output format ON TOP of baseline
 # =============================================================================
 
 class S1_ToolBench(ToolBenchLoader):
-    """Prompt Rewrite: strict output format, remove CRITICAL hack."""
+    """Prompt Rewrite: adds strict Thought/Action/Action Input format to baseline."""
     def format_prompt(self, sample):
-        messages = sample.get("messages", [])
-        filtered_messages = []
+        messages = _toolbench_base_messages(sample)
         for msg in messages:
-            role = msg.get("role", "user")
-            content = msg.get("content", "")
-            role, content = _sanitize_role(role, content)
-            if role == "assistant" and not content.strip():
-                continue
-            if role == "system":
-                # Replace the vague instructions with strict format
-                content += "\n\nOUTPUT FORMAT: You MUST respond in EXACTLY this format, nothing else:\nThought: <your reasoning about which tool to use and why>\nAction: <exact tool name from the list above>\nAction Input: <valid JSON object with the required parameters>"
-            filtered_messages.append({"role": role, "content": content})
-        return filtered_messages
+            if msg["role"] == "system":
+                msg["content"] += (
+                    "\n\nOUTPUT FORMAT: You MUST respond in EXACTLY this format:\n"
+                    "Thought: <your reasoning about which tool to use and why>\n"
+                    "Action: <exact tool name from the list above>\n"
+                    "Action Input: <valid JSON object with the required parameters>"
+                )
+        return messages
 
 
 class S1_ComplexFunc(ComplexFuncLoader):
-    """Prompt Rewrite: structured step-by-step + strict JSON output."""
+    """Prompt Rewrite: adds format precision rules on top of baseline reasoning."""
+    max_tokens = 4096
+
     def format_prompt(self, sample):
-        conversations = sample.get("conversations", [])
         functions = sample.get("functions", [])
-
-        system_content = "You are a function-calling AI assistant.\n"
-        if functions:
-            system_content += "Available Functions:\n" + json.dumps(functions, indent=2) + "\n\n"
+        system_content = _complexfunc_base_system(functions)
         system_content += (
-            "Instructions:\n"
-            "1. Read the user request carefully.\n"
-            "2. Identify which function(s) to call and with what arguments.\n"
-            "3. Output ONLY a JSON array of function calls. No explanation.\n"
-            "Format: [{\"name\": \"function_name\", \"arguments\": {\"param\": \"value\"}}]\n"
+            "\n\nADDITIONAL FORMAT RULES:\n"
+            "- Think step by step about what the user needs.\n"
+            "- Identify ALL required function calls with exact argument values.\n"
+            "- Your final output MUST be a JSON array [...] even for a single call.\n"
+            "- Use exact values from the user request (dates, numbers, names, coordinates)."
         )
-
         messages = [{"role": "system", "content": system_content}]
-        for msg in conversations:
-            role = "user" if msg.get("from", msg.get("role")) in ["user", "human"] else "assistant"
-            content = msg.get("value", msg.get("content", ""))
-            if role == "assistant":
-                break
-            messages.append({"role": role, "content": content})
+        messages.extend(_complexfunc_user_messages(sample.get("conversations", [])))
         return messages
 
 
 class S1_ToolJSON(ToolJSONLoader):
     """Prompt Rewrite: direct answer instruction with pruned JSON."""
     stop_sequences = []
+    enable_thinking = False
+    max_tokens = 4096
 
     def format_prompt(self, sample):
         question = sample.get("question", "")
         raw_json = _load_json_for_tooljson(sample, self.base_repo_dir)
         json_content = JSONPruner.prune(raw_json, question, top_k=50)
-
         prompt = (
             "You are a data extraction assistant. Given API response data and a question, "
             "output ONLY the answer value. No explanation, no sentences.\n"
@@ -127,7 +176,7 @@ class S1_ToolJSON(ToolJSONLoader):
 
 
 # =============================================================================
-# STRATEGY 2: Tool Compression
+# STRATEGY 2: Tool Compression -- compress descriptions, keep baseline behavior
 # =============================================================================
 
 class ToolCompressor:
@@ -136,12 +185,9 @@ class ToolCompressor:
     def compress_tool(tool):
         name = tool.get("name", "")
         desc = tool.get("description", "")
-        # Truncate description to first sentence
         first_sentence = desc.split('.')[0].strip() + '.' if desc else ""
         if len(first_sentence) > 120:
             first_sentence = first_sentence[:117] + "..."
-
-        # Extract just parameter names
         params = tool.get("parameters", {})
         param_names = []
         if isinstance(params, dict):
@@ -150,7 +196,6 @@ class ToolCompressor:
             for pname in props:
                 suffix = " (required)" if pname in required else ""
                 param_names.append(f"{pname}{suffix}")
-
         compressed = {"name": name, "description": first_sentence}
         if param_names:
             compressed["params"] = ", ".join(param_names)
@@ -162,28 +207,28 @@ class ToolCompressor:
 
 
 class S2_ToolBench(ToolBenchLoader):
-    """Tool Compression: keep ALL tools but compress descriptions."""
+    """Tool Compression: compress tool descriptions to reduce prompt size."""
     def format_prompt(self, sample):
-        messages = sample.get("messages", [])
-        filtered_messages = []
+        messages = _toolbench_base_messages(sample)
         for msg in messages:
-            role = msg.get("role", "user")
-            content = msg.get("content", "")
-            role, content = _sanitize_role(role, content)
-            if role == "assistant" and not content.strip():
-                continue
-            if role == "system":
-                tools, start, end = _extract_tools_from_system(content)
+            if msg["role"] == "system":
+                tools, start, end = _extract_tools_from_system(msg["content"])
                 if tools and start is not None:
                     compressed = ToolCompressor.compress_tools(tools)
-                    content = _replace_tools_in_content(content, start, end, compressed)
-                content += "\n\nRespond with:\nThought: <reasoning>\nAction: <tool_name>\nAction Input: <json>"
-            filtered_messages.append({"role": role, "content": content})
-        return filtered_messages
+                    msg["content"] = _replace_tools_in_content(msg["content"], start, end, compressed)
+                msg["content"] += (
+                    "\n\nRespond with:\n"
+                    "Thought: <reasoning>\n"
+                    "Action: <tool_name>\n"
+                    "Action Input: <json>"
+                )
+        return messages
 
 
 class S2_ComplexFunc(ComplexFuncLoader):
-    """Tool Compression: compress function signatures."""
+    """Tool Compression: compress function signatures, keep baseline reasoning."""
+    max_tokens = 4096
+
     def format_prompt(self, sample):
         conversations = sample.get("conversations", [])
         functions = sample.get("functions", [])
@@ -205,29 +250,23 @@ class S2_ComplexFunc(ComplexFuncLoader):
                     cf["required"] = required
             compressed_funcs.append(cf)
 
-        system_content = "You are a helpful AI assistant capable of tool calling.\n"
-        if compressed_funcs:
-            system_content += "Available Functions:\n" + json.dumps(compressed_funcs, indent=2) + "\n\n"
-        system_content += "Output a JSON array of function calls: [{\"name\": \"func\", \"arguments\": {\"arg\": \"val\"}}]"
-
+        # Use baseline system template with compressed functions
+        system_content = _complexfunc_base_system(compressed_funcs)
         messages = [{"role": "system", "content": system_content}]
-        for msg in conversations:
-            role = "user" if msg.get("from", msg.get("role")) in ["user", "human"] else "assistant"
-            if role == "assistant":
-                break
-            messages.append({"role": role, "content": msg.get("value", msg.get("content", ""))})
+        messages.extend(_complexfunc_user_messages(conversations))
         return messages
 
 
 class S2_ToolJSON(ToolJSONLoader):
-    """Tool Compression: same as S1 for ToolJSON (pruning is the compression)."""
+    """Tool Compression: pruned JSON is the compression."""
     stop_sequences = []
+    enable_thinking = False
+    max_tokens = 4096
 
     def format_prompt(self, sample):
         question = sample.get("question", "")
         raw_json = _load_json_for_tooljson(sample, self.base_repo_dir)
         json_content = JSONPruner.prune(raw_json, question, top_k=50)
-
         prompt = (
             f"Data:\n{json_content}\n\n"
             f"Question: {question}\n"
@@ -237,70 +276,57 @@ class S2_ToolJSON(ToolJSONLoader):
 
 
 # =============================================================================
-# STRATEGY 3: Chain-of-Thought
+# STRATEGY 3: Chain-of-Thought -- explicit reasoning ON TOP of baseline
 # =============================================================================
 
 class S3_ToolBench(ToolBenchLoader):
-    """CoT: guide model to reason before selecting tool."""
+    """CoT: explicit reasoning steps added to baseline."""
     def format_prompt(self, sample):
-        messages = sample.get("messages", [])
-        filtered_messages = []
+        messages = _toolbench_base_messages(sample)
         for msg in messages:
-            role = msg.get("role", "user")
-            content = msg.get("content", "")
-            role, content = _sanitize_role(role, content)
-            if role == "assistant" and not content.strip():
-                continue
-            if role == "system":
-                content += (
-                    "\n\nBefore selecting a tool, follow these reasoning steps:"
-                    "\n1. What does the user need? List the key requirements."
-                    "\n2. Which available tools could address each requirement? Match tool descriptions to needs."
-                    "\n3. Which single tool is the BEST first step? Pick that one."
-                    "\n\nThen respond with:"
-                    "\nThought: <your step-by-step reasoning>"
-                    "\nAction: <the chosen tool name>"
-                    "\nAction Input: <JSON arguments>"
+            if msg["role"] == "system":
+                msg["content"] += (
+                    "\n\nBefore selecting a tool, follow these reasoning steps:\n"
+                    "1. What does the user need? List the key requirements.\n"
+                    "2. Which available tools could address each requirement?\n"
+                    "3. Which single tool is the BEST first step?\n\n"
+                    "Then respond with:\n"
+                    "Thought: <your step-by-step reasoning>\n"
+                    "Action: <the chosen tool name>\n"
+                    "Action Input: <JSON arguments>"
                 )
-            filtered_messages.append({"role": role, "content": content})
-        return filtered_messages
+        return messages
 
 
 class S3_ComplexFunc(ComplexFuncLoader):
-    """CoT: decompose request into sub-tasks then map to functions."""
+    """CoT: explicit decomposition steps on top of baseline."""
+    max_tokens = 4096
+
     def format_prompt(self, sample):
-        conversations = sample.get("conversations", [])
         functions = sample.get("functions", [])
-
-        system_content = "You are a helpful AI assistant capable of multi-step reasoning and tool calling.\n"
-        if functions:
-            system_content += "Available Functions:\n" + json.dumps(functions, indent=2) + "\n\n"
+        system_content = _complexfunc_base_system(functions)
         system_content += (
-            "Follow these steps:\n"
+            "\n\nREASONING STEPS:\n"
             "1. DECOMPOSE: Break the user request into atomic sub-tasks.\n"
-            "2. MAP: For each sub-task, identify which function to call and what arguments to use.\n"
-            "3. OUTPUT: Provide your reasoning, then output the function calls as a JSON array.\n"
-            "Format: [{\"name\": \"func\", \"arguments\": {\"arg\": \"val\"}}]\n"
+            "2. MAP: For each sub-task, identify which function to call and what arguments.\n"
+            "3. VERIFY: Double-check argument values exactly match what the user asked for.\n"
+            "4. OUTPUT: Write your final tool calls as a JSON array."
         )
-
         messages = [{"role": "system", "content": system_content}]
-        for msg in conversations:
-            role = "user" if msg.get("from", msg.get("role")) in ["user", "human"] else "assistant"
-            if role == "assistant":
-                break
-            messages.append({"role": role, "content": msg.get("value", msg.get("content", ""))})
+        messages.extend(_complexfunc_user_messages(sample.get("conversations", [])))
         return messages
 
 
 class S3_ToolJSON(ToolJSONLoader):
     """CoT: guide model to locate data first, then extract answer."""
     stop_sequences = []
+    enable_thinking = False
+    max_tokens = 4096
 
     def format_prompt(self, sample):
         question = sample.get("question", "")
         raw_json = _load_json_for_tooljson(sample, self.base_repo_dir)
         json_content = JSONPruner.prune(raw_json, question, top_k=50)
-
         prompt = (
             f"Data:\n{json_content}\n\n"
             f"Question: {question}\n\n"
@@ -314,11 +340,11 @@ class S3_ToolJSON(ToolJSONLoader):
 
 
 # =============================================================================
-# STRATEGY 4: Two-Stage LLM
+# STRATEGY 4: Two-Stage LLM -- preprocess with LLM, then answer
 # =============================================================================
 
 class S4_ToolBench(ToolBenchLoader):
-    """Two-Stage: LLM selects relevant tools first, then acts with those tools."""
+    """Two-Stage: LLM selects relevant tools first, then acts."""
     def __init__(self, data_path, agent_name=None):
         super().__init__(data_path, agent_name=agent_name)
         from core.llm_client import LLMClient
@@ -328,7 +354,6 @@ class S4_ToolBench(ToolBenchLoader):
         messages = sample.get("messages", [])
         user_query = self.get_question(sample)
 
-        # Find system message and extract tools
         system_content = ""
         for msg in messages:
             if msg.get("role") == "system":
@@ -339,50 +364,46 @@ class S4_ToolBench(ToolBenchLoader):
         if not tools or start is None:
             return super().format_prompt(sample)
 
-        # Stage 1: Ask LLM to pick the best tools
+        # Stage 1: LLM picks top tools
         tool_summary = "\n".join(
             f"- {t.get('name','')}: {t.get('description','')[:100]}" for t in tools
         )
         stage1_prompt = (
             f"User query: {user_query}\n\n"
             f"Available tools:\n{tool_summary}\n\n"
-            "Which 3 tools are most relevant to this query? "
-            "Output ONLY the tool names, one per line, nothing else."
+            "Which 3 tools are most relevant? Output ONLY tool names, one per line."
         )
         stage1_result = self._preprocessor.generate(stage1_prompt, stop=[])
         selected_names = set(line.strip().strip('-').strip() for line in stage1_result.strip().split('\n') if line.strip())
 
-        # Filter tools to only selected ones
         filtered_tools = [t for t in tools if t.get('name', '') in selected_names]
-
-        # Always keep Finish tool
-        finish_names = {t.get('name') for t in filtered_tools}
-        if 'Finish' not in finish_names:
+        if not any(t.get('name') == 'Finish' for t in filtered_tools):
             finish_tool = next((t for t in tools if t.get('name') == 'Finish'), None)
             if finish_tool:
                 filtered_tools.append(finish_tool)
-
-        # If LLM didn't select anything useful, fall back to all tools
         if len(filtered_tools) <= 1:
             filtered_tools = tools
 
-        # Build final messages with filtered tools
-        filtered_messages = []
-        for msg in messages:
-            role = msg.get("role", "user")
-            content = msg.get("content", "")
-            role, content = _sanitize_role(role, content)
-            if role == "assistant" and not content.strip():
-                continue
-            if role == "system":
-                content = _replace_tools_in_content(content, start, end, filtered_tools)
-                content += "\n\nRespond with:\nThought: <reasoning>\nAction: <tool_name>\nAction Input: <json>"
-            filtered_messages.append({"role": role, "content": content})
-        return filtered_messages
+        # Stage 2: Build messages with filtered tools + CRITICAL INSTRUCTION
+        result = _toolbench_base_messages(sample)
+        for msg in result:
+            if msg["role"] == "system":
+                t2, s2, e2 = _extract_tools_from_system(msg["content"])
+                if t2 and s2 is not None:
+                    msg["content"] = _replace_tools_in_content(msg["content"], s2, e2, filtered_tools)
+                msg["content"] += (
+                    "\n\nRespond with:\n"
+                    "Thought: <reasoning>\n"
+                    "Action: <tool_name>\n"
+                    "Action Input: <json>"
+                )
+        return result
 
 
 class S4_ComplexFunc(ComplexFuncLoader):
-    """Two-Stage: LLM identifies relevant functions first, then calls them."""
+    """Two-Stage: LLM identifies relevant functions, then baseline prompt with those."""
+    max_tokens = 4096
+
     def __init__(self, data_path, agent_name=None):
         super().__init__(data_path, agent_name=agent_name)
         from core.llm_client import LLMClient
@@ -391,11 +412,9 @@ class S4_ComplexFunc(ComplexFuncLoader):
     def format_prompt(self, sample):
         conversations = sample.get("conversations", [])
         functions = sample.get("functions", [])
-
         if not functions:
             return super().format_prompt(sample)
 
-        # Get user question
         user_query = ""
         for msg in conversations:
             role = "user" if msg.get("from", msg.get("role")) in ["user", "human"] else "assistant"
@@ -404,7 +423,7 @@ class S4_ComplexFunc(ComplexFuncLoader):
             elif role == "assistant":
                 break
 
-        # Stage 1: Ask LLM which functions are needed
+        # Stage 1: LLM picks relevant functions
         func_summary = "\n".join(
             f"- {f.get('name','')}: {f.get('description','')[:100]}" for f in functions
         )
@@ -416,28 +435,22 @@ class S4_ComplexFunc(ComplexFuncLoader):
         stage1_result = self._preprocessor.generate(stage1_prompt, stop=[])
         selected_names = set(line.strip().strip('-').strip() for line in stage1_result.strip().split('\n') if line.strip())
 
-        # Filter functions
         filtered_funcs = [f for f in functions if f.get('name', '') in selected_names]
         if not filtered_funcs:
             filtered_funcs = functions
 
-        # Stage 2: Build prompt with only relevant functions
-        system_content = "You are a function-calling AI assistant.\n"
-        system_content += "Available Functions:\n" + json.dumps(filtered_funcs, indent=2) + "\n\n"
-        system_content += "Output ONLY a JSON array of function calls: [{\"name\": \"func\", \"arguments\": {\"arg\": \"val\"}}]"
-
+        # Stage 2: Baseline system prompt with filtered functions
+        system_content = _complexfunc_base_system(filtered_funcs)
         messages = [{"role": "system", "content": system_content}]
-        for msg in conversations:
-            role = "user" if msg.get("from", msg.get("role")) in ["user", "human"] else "assistant"
-            if role == "assistant":
-                break
-            messages.append({"role": role, "content": msg.get("value", msg.get("content", ""))})
+        messages.extend(_complexfunc_user_messages(conversations))
         return messages
 
 
 class S4_ToolJSON(ToolJSONLoader):
-    """Two-Stage: LLM extracts relevant snippet first, then answers."""
+    """Two-Stage: LLM extracts relevant data, then answers from it."""
     stop_sequences = []
+    enable_thinking = False
+    max_tokens = 4096
 
     def __init__(self, data_path, base_repo_dir="data/toolJSONprocessing", agent_name=None):
         super().__init__(data_path, base_repo_dir, agent_name=agent_name)
@@ -449,7 +462,7 @@ class S4_ToolJSON(ToolJSONLoader):
         raw_json = _load_json_for_tooljson(sample, self.base_repo_dir)
         pruned = JSONPruner.prune(raw_json, question, top_k=50)
 
-        # Stage 1: Ask LLM to extract just the relevant data
+        # Stage 1: Extract relevant data
         stage1_prompt = (
             f"Data:\n{pruned}\n\n"
             f"Question: {question}\n\n"
@@ -458,7 +471,7 @@ class S4_ToolJSON(ToolJSONLoader):
         )
         extracted = self._preprocessor.generate(stage1_prompt, stop=[])
 
-        # Stage 2: Answer based on extracted data
+        # Stage 2: Answer
         prompt = (
             f"Extracted data:\n{extracted}\n\n"
             f"Question: {question}\n"
@@ -468,10 +481,9 @@ class S4_ToolJSON(ToolJSONLoader):
 
 
 # =============================================================================
-# STRATEGY 5: Few-Shot In-Context Examples
+# STRATEGY 5: Few-Shot -- in-context examples ON TOP of baseline
 # =============================================================================
 
-# Hardcoded examples for each dataset
 _TOOLBENCH_EXAMPLE = {
     "user": "I need to find the weather forecast for Paris next week and also get restaurant recommendations nearby.",
     "response": (
@@ -481,9 +493,16 @@ _TOOLBENCH_EXAMPLE = {
     )
 }
 
+# Multi-call example so model learns to output arrays with multiple calls
 _COMPLEXFUNC_EXAMPLE = {
-    "user": "Book a flight from New York to London on December 25th for 2 adults in economy class.",
-    "response": '[{"name": "search_flights", "arguments": {"origin": "New York", "destination": "London", "date": "2024-12-25", "passengers": 2, "class": "economy"}}]'
+    "user": "Book a flight from New York to London on December 25th for 2 adults in economy class, and also search for hotels in London from December 25th to January 1st.",
+    "response": (
+        'I need to: 1) search flights with the given details, 2) search hotels in London.\n\n'
+        '[{"name": "search_flights", "arguments": {"origin": "New York", "destination": "London", '
+        '"date": "2024-12-25", "passengers": 2, "class": "economy"}}, '
+        '{"name": "search_hotels", "arguments": {"location": "London", '
+        '"check_in": "2024-12-25", "check_out": "2025-01-01"}}]'
+    )
 }
 
 _TOOLJSON_EXAMPLE = {
@@ -494,67 +513,54 @@ _TOOLJSON_EXAMPLE = {
 
 
 class S5_ToolBench(ToolBenchLoader):
-    """Few-Shot: add 1 example before the actual task."""
+    """Few-Shot: 1 example added to baseline."""
     def format_prompt(self, sample):
-        messages = sample.get("messages", [])
-        filtered_messages = []
+        messages = _toolbench_base_messages(sample)
         for msg in messages:
-            role = msg.get("role", "user")
-            content = msg.get("content", "")
-            role, content = _sanitize_role(role, content)
-            if role == "assistant" and not content.strip():
-                continue
-            if role == "system":
-                content += (
-                    "\n\n--- EXAMPLE ---"
-                    f"\nUser: {_TOOLBENCH_EXAMPLE['user']}"
-                    f"\nAssistant: {_TOOLBENCH_EXAMPLE['response']}"
-                    "\n--- END EXAMPLE ---"
-                    "\n\nNow respond to the actual task in the same format:"
-                    "\nThought: <reasoning>"
-                    "\nAction: <tool_name>"
-                    "\nAction Input: <json>"
+            if msg["role"] == "system":
+                msg["content"] += (
+                    "\n\n--- EXAMPLE ---\n"
+                    f"User: {_TOOLBENCH_EXAMPLE['user']}\n"
+                    f"Assistant: {_TOOLBENCH_EXAMPLE['response']}\n"
+                    "--- END EXAMPLE ---\n\n"
+                    "Now respond to the actual task in the same format:\n"
+                    "Thought: <reasoning>\n"
+                    "Action: <tool_name>\n"
+                    "Action Input: <json>"
                 )
-            filtered_messages.append({"role": role, "content": content})
-        return filtered_messages
+        return messages
 
 
 class S5_ComplexFunc(ComplexFuncLoader):
-    """Few-Shot: add 1 function-calling example."""
-    def format_prompt(self, sample):
-        conversations = sample.get("conversations", [])
-        functions = sample.get("functions", [])
+    """Few-Shot: multi-call example on top of baseline reasoning prompt."""
+    max_tokens = 4096
 
-        system_content = "You are a helpful AI assistant capable of tool calling.\n"
-        if functions:
-            system_content += "Available Functions:\n" + json.dumps(functions, indent=2) + "\n\n"
+    def format_prompt(self, sample):
+        functions = sample.get("functions", [])
+        system_content = _complexfunc_base_system(functions)
+        # Example shows reasoning THEN multi-call array -- matches baseline behavior
         system_content += (
-            "Output a JSON array of function calls.\n\n"
-            "--- EXAMPLE ---\n"
+            "\n\n--- EXAMPLE ---\n"
             f"User: {_COMPLEXFUNC_EXAMPLE['user']}\n"
             f"Assistant: {_COMPLEXFUNC_EXAMPLE['response']}\n"
             "--- END EXAMPLE ---\n\n"
-            "Now handle the actual request. Output ONLY the JSON array:"
+            "Now handle the actual request. Think through it, then provide your JSON array."
         )
-
         messages = [{"role": "system", "content": system_content}]
-        for msg in conversations:
-            role = "user" if msg.get("from", msg.get("role")) in ["user", "human"] else "assistant"
-            if role == "assistant":
-                break
-            messages.append({"role": role, "content": msg.get("value", msg.get("content", ""))})
+        messages.extend(_complexfunc_user_messages(sample.get("conversations", [])))
         return messages
 
 
 class S5_ToolJSON(ToolJSONLoader):
-    """Few-Shot: add 1 QA example before the actual question."""
+    """Few-Shot: 1 QA example before the actual question."""
     stop_sequences = []
+    enable_thinking = False
+    max_tokens = 4096
 
     def format_prompt(self, sample):
         question = sample.get("question", "")
         raw_json = _load_json_for_tooljson(sample, self.base_repo_dir)
         json_content = JSONPruner.prune(raw_json, question, top_k=50)
-
         prompt = (
             "You are a data extraction assistant.\n\n"
             "--- EXAMPLE ---\n"
@@ -570,7 +576,7 @@ class S5_ToolJSON(ToolJSONLoader):
 
 
 # =============================================================================
-# Registry: map strategy name -> loader classes
+# Registry
 # =============================================================================
 STRATEGIES = {
     "s1_prompt": {

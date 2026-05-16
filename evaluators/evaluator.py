@@ -13,7 +13,18 @@ class Evaluator:
         self.client = LLMClient(agent_name=agent_name)
         self.judge_client = LLMClient(agent_name=judge_name)
 
-    def _process_single_sample(self, i, sample):
+    def _safe_write_json(self, path, payload):
+        try:
+            with open(path, 'w', encoding='utf-8') as f:
+                json.dump(payload, f, indent=4, ensure_ascii=False)
+            return path
+        except OSError:
+            fallback = f"{os.path.splitext(path)[0]}_{int(time.time() * 1000)}.json"
+            with open(fallback, 'w', encoding='utf-8') as f:
+                json.dump(payload, f, indent=4, ensure_ascii=False)
+            return fallback
+
+    def _process_single_sample(self, i, sample, skip_judge=False):
         prompt = self.data_loader.format_prompt(sample)
         ground_truth = self.data_loader.get_ground_truth(sample)
         question = self.data_loader.get_question(sample)
@@ -27,7 +38,7 @@ class Evaluator:
             "question/task": question,
             "ground_truth": ground_truth,
             "exact_match": 0, "contains": 0, "action_match": 0,
-            "f1_score": 0, "bleu_score": 0, "rouge1": 0, "rougeL": 0, "llm_judge": 0,
+            "f1_score": 0, "bleu_score": 0, "rouge1": 0, "rougeL": 0, "llm_judge": -1 if skip_judge else 0,
             "error": None
         }
 
@@ -35,7 +46,8 @@ class Evaluator:
             # Predict (use loader-specific stop sequences and thinking mode)
             stop = self.data_loader.stop_sequences
             enable_thinking = getattr(self.data_loader, 'enable_thinking', False)
-            prediction = self.client.generate(prompt, stop=stop, enable_thinking=enable_thinking)
+            max_tokens = getattr(self.data_loader, 'max_tokens', None)
+            prediction = self.client.generate(prompt, stop=stop, enable_thinking=enable_thinking, max_tokens=max_tokens)
             res["prediction"] = prediction
             elapsed = time.time() - start_time
 
@@ -60,10 +72,13 @@ class Evaluator:
             res["rougeL"] = rouge["rougeL"]
             res["action_match"] = Metrics.action_match(prediction, ground_truth)
             
-            try:
-                res["llm_judge"] = Metrics.llm_as_judge(prediction, ground_truth, question, self.judge_client)
-            except Exception as e:
-                res["error"] = str(e)
+            if skip_judge:
+                res["llm_judge"] = -1
+            else:
+                try:
+                    res["llm_judge"] = Metrics.llm_as_judge(prediction, ground_truth, question, self.judge_client)
+                except Exception as e:
+                    res["error"] = str(e)
             
             total_elapsed = time.time() - start_time
             tqdm.write(f"[Sample {i}] Done ({total_elapsed:.1f}s) | EM={res['exact_match']} F1={res['f1_score']:.2f} Judge={res['llm_judge']}")
@@ -76,7 +91,7 @@ class Evaluator:
 
         return res
 
-    def evaluate(self, limit=None, output_dir="results", workers=1):
+    def evaluate(self, limit=None, output_dir="results", workers=1, skip_judge=False):
         os.makedirs(output_dir, exist_ok=True)
         data = self.data_loader.data
         
@@ -100,12 +115,12 @@ class Evaluator:
         from concurrent.futures import ThreadPoolExecutor, as_completed
         
         with ThreadPoolExecutor(max_workers=workers) as executor:
-            futures = {executor.submit(self._process_single_sample, i, sample): i for i, sample in enumerate(data)}
+            futures = {executor.submit(self._process_single_sample, i, sample, skip_judge): i for i, sample in enumerate(data)}
             # Scale timeout: ~60s per batch of workers, minimum 300s
             total_timeout = max(300, (len(data) / max(workers, 1)) * 60)
             for future in tqdm(as_completed(futures, timeout=total_timeout), total=len(data)):
                 try:
-                    res = future.result(timeout=30)
+                    res = future.result(timeout=180)
                     
                     if res.get("error"):
                         trace_log.append({
@@ -130,7 +145,7 @@ class Evaluator:
                         "ground_truth": "",
                         "prediction": "",
                         "exact_match": 0, "contains": 0, "action_match": 0,
-                        "f1_score": 0, "bleu_score": 0, "rouge1": 0, "rougeL": 0, "llm_judge": 0
+                        "f1_score": 0, "bleu_score": 0, "rouge1": 0, "rougeL": 0, "llm_judge": -1 if skip_judge else 0
                     })
                 except Exception as e:
                     print(f"Fatal error processing sample: {e}")
@@ -161,20 +176,24 @@ class Evaluator:
         output_file_csv = os.path.join(output_dir, f"{dataset_name}_{self.agent_name}_detailed.csv")
         trace_file_json = os.path.join(output_dir, f"{dataset_name}_trace.json")
         
-        with open(output_file_json, 'w', encoding='utf-8') as f:
-            json.dump({"summary": summary_metrics, "details": results}, f, indent=4, ensure_ascii=False)
+        saved_json = self._safe_write_json(output_file_json, {"summary": summary_metrics, "details": results})
             
         df = pd.DataFrame(results)
-        df.to_csv(output_file_csv, index=False, encoding='utf-8')
+        try:
+            df.to_csv(output_file_csv, index=False, encoding='utf-8')
+        except OSError:
+            output_file_csv = os.path.join(output_dir, f"{dataset_name}_{self.agent_name}_detailed_{int(time.time() * 1000)}.csv")
+            df.to_csv(output_file_csv, index=False, encoding='utf-8')
 
         if trace_log:
-            with open(trace_file_json, 'w', encoding='utf-8') as f:
-                json.dump(trace_log, f, indent=4, ensure_ascii=False)
-            print(f"\nTrace log saved to {trace_file_json}")
+            saved_trace = self._safe_write_json(trace_file_json, trace_log)
+            print(f"\nTrace log saved to {saved_trace}")
         
         print("\nEvaluation Summary:")
         for k, v in summary_metrics.items():
             print(f"{k}: {v:.4f}")
             
         print(f"\nResults saved to {output_dir}")
+        if saved_json != output_file_json:
+            print(f"Detailed JSON saved to {saved_json}")
         return summary_metrics

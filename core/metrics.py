@@ -7,18 +7,38 @@ from rouge_score import rouge_scorer
 class Metrics:
     @staticmethod
     def _strip_thinking(text):
-        """Remove <think>...</think> blocks from thinking-model output."""
+        """Remove <think>...</think> blocks and inline thinking from model output."""
         if not isinstance(text, str):
             return str(text)
-        return re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL).strip()
+        # 1. Remove <think>...</think> XML blocks
+        text = re.sub(r'<think>.*?</think>', '', text, flags=re.DOTALL).strip()
+        # 2. Remove inline "Thinking Process:" blocks (Qwen-style)
+        #    Only strip if there's a clear answer boundary after it
+        answer_patterns = [
+            r'(?:^|\n)\s*(?:ANSWER|Final Answer)\s*[:=]',
+            r'(?:^|\n)\s*(?:Therefore|Thus|Hence|So)[,:]?\s+(?:the answer is|it is)',
+        ]
+        for ap in answer_patterns:
+            m = re.search(ap, text, re.IGNORECASE)
+            if m:
+                # Find where the thinking block starts (before the answer)
+                think_start = re.search(
+                    r'(?i)(?:thinking process|let me think|my reasoning)[:\s]*\n',
+                    text
+                )
+                if think_start and think_start.start() < m.start():
+                    text = text[:think_start.start()] + text[m.start():]
+                break
+        return text.strip()
 
     @staticmethod
     def normalize_text(text):
         if not isinstance(text, str):
             text = str(text)
-        # Lowercase, remove punctuation and extra whitespace
+        # Lowercase, split punctuation-delimited values, and collapse whitespace.
+        # Replacing punctuation with spaces avoids merging comma-separated IDs.
         text = text.lower()
-        text = re.sub(r'[^\w\s]', '', text)
+        text = re.sub(r'[^\w\s]', ' ', text)
         return ' '.join(text.split())
 
     # ------------------------------------------------------------------
@@ -45,16 +65,79 @@ class Metrics:
         return name.lower() + "|" + args_norm
 
     @staticmethod
+    def _extract_json_from_codeblock(text):
+        """Extract JSON content from markdown code blocks (complete or truncated)."""
+        # Match complete ```json ... ``` or ``` ... ```
+        m = re.search(r'```(?:json)?\s*\n?(.*?)```', text, re.DOTALL)
+        if m:
+            return m.group(1).strip()
+        # Handle truncated code block (no closing ```) - common with max_tokens cutoff
+        m = re.search(r'```(?:json)?\s*\n?(.*)', text, re.DOTALL)
+        if m:
+            return m.group(1).strip()
+        return None
+
+    @staticmethod
     def _normalize_json_calls(text):
-        """Extract & normalize a JSON function-call array (ComplexFunc)."""
+        """Extract & normalize a JSON function-call array or single object (ComplexFunc)."""
+        def _try_parse(t):
+            # Try JSON array first - complete array
+            m = re.search(r'\[\s*\{', t)
+            if m:
+                # Use raw_decode from the [ to handle both complete and truncated
+                try:
+                    parsed, _ = json.JSONDecoder().raw_decode(t[m.start():])
+                    if (isinstance(parsed, list) and
+                            all(isinstance(i, dict) and "name" in i for i in parsed)):
+                        return parsed
+                except Exception:
+                    pass
+                # Truncated array: extract individual complete objects from partial array
+                partial_text = t[m.start() + 1:]  # skip the [
+                objects = []
+                decoder = json.JSONDecoder()
+                pos = 0
+                while pos < len(partial_text):
+                    # Skip whitespace and commas
+                    while pos < len(partial_text) and partial_text[pos] in ' \t\n\r,':
+                        pos += 1
+                    if pos >= len(partial_text) or partial_text[pos] == ']':
+                        break
+                    if partial_text[pos] == '{':
+                        try:
+                            obj, end_idx = decoder.raw_decode(partial_text[pos:])
+                            if isinstance(obj, dict) and "name" in obj:
+                                objects.append(obj)
+                            pos += end_idx
+                        except json.JSONDecodeError:
+                            break  # truncated object, stop here
+                    else:
+                        break
+                if objects:
+                    return objects
+
+            # Try single JSON object {"name": ...}
+            m = re.search(r'\{\s*"name"\s*:', t)
+            if m:
+                try:
+                    obj, _ = json.JSONDecoder().raw_decode(t[m.start():])
+                    if isinstance(obj, dict) and "name" in obj:
+                        return [obj]
+                except Exception:
+                    pass
+            return None
+
+        # First try extracting from code blocks
+        codeblock = Metrics._extract_json_from_codeblock(text)
+        parsed = None
+        if codeblock:
+            parsed = _try_parse(codeblock)
+        if parsed is None:
+            parsed = _try_parse(text)
+        if parsed is None:
+            return None
+
         try:
-            m = re.search(r'\[\s*\{.*?\}\s*\]', text, re.DOTALL)
-            if not m:
-                return None
-            parsed = json.loads(m.group(0))
-            if not (isinstance(parsed, list) and
-                    all(isinstance(i, dict) and "name" in i for i in parsed)):
-                return None
             normalized = []
             for item in parsed:
                 args = item.get("arguments", {})
@@ -76,17 +159,75 @@ class Metrics:
         """Extract the final answer from a thinking-model output."""
         if not isinstance(text, str):
             return ""
-        # Strip content after </think>
+        # 1. After </think> tag
         idx = text.rfind('</think>')
         if idx != -1:
             text = text[idx + len('</think>'):]
-        # Take last non-empty line(s) — handles multi-line short answers
+
+        # 2. Look for explicit answer markers
+        for pattern in [
+            r'(?i)(?:^|\n)\s*(?:ANSWER|Final Answer|Result|Output)\s*[:=]\s*(.+)',
+            r'(?i)(?:^|\n)\s*(?:Therefore|Thus|Hence|So),?\s+(?:the answer is|it is)\s*[:.]?\s*(.+)',
+            r'(?i)(?:^|\n)\s*The\s+\w+\s+is\s*[:.]?\s*["\']?([^"\'\n]+)["\']?\s*$',
+        ]:
+            m = re.search(pattern, text)
+            if m:
+                answer = m.group(1).strip().strip('"\' .')
+                if answer:
+                    return answer
+
+        # 3. Take last non-empty line(s) — handles multi-line short answers
         lines = [l.strip() for l in text.strip().splitlines() if l.strip()]
         if lines:
             return lines[-1]
         return ""
 
     # ------------------------------------------------------------------
+
+    @staticmethod
+    def _extract_core_answer(text):
+        """Try multiple strategies to extract only the answer portion from verbose output."""
+        if not isinstance(text, str):
+            return str(text)
+
+        # Strategy 1: Explicit answer markers
+        for pattern in [
+            r'(?i)(?:^|\n)\s*(?:ANSWER|Final Answer|Result|Output)\s*[:=]\s*(.+)',
+            r'(?i)(?:^|\n)\s*(?:Therefore|Thus|Hence|So),?\s+(?:the answer is|it is)\s*[:.]?\s*(.+)',
+        ]:
+            m = re.search(pattern, text)
+            if m:
+                answer = m.group(1).strip().strip('"\' .')
+                if answer:
+                    return answer
+
+        # Strategy 2: After </think> tag
+        idx = text.rfind('</think>')
+        if idx != -1:
+            after = text[idx + len('</think>'):].strip()
+            if after:
+                return after
+
+        # Strategy 3: Look for quoted values near answer-indicating phrases
+        #  e.g. 'is "DEFA14A"' or 'is "2023-03-15"'
+        m = re.search(r'(?:is|=|:)\s*"([^"]+)"\s*[.,;\n]', text)
+        if m:
+            return m.group(1).strip()
+
+        # Strategy 4: Look for unquoted short values after "is"/"is:"
+        #  e.g. 'formType is: DEFA14A' or 'the answer is 42'
+        m = re.search(r'(?:is|is:)\s+([A-Za-z0-9][\w\-/., ]{0,50})\s*[.\n*]', text)
+        if m:
+            candidate = m.group(1).strip().rstrip('.')
+            # Only return if it's short enough to be an answer (not a full sentence)
+            if len(candidate.split()) <= 8:
+                return candidate
+
+        # Strategy 5: Last non-empty line (for verbose outputs)
+        lines = [l.strip() for l in text.strip().splitlines() if l.strip()]
+        if lines:
+            return lines[-1]
+        return text
 
     @staticmethod
     def exact_match(prediction, truth):
@@ -107,17 +248,11 @@ class Metrics:
         if pred_act and truth_act and pred_act == truth_act:
             return 1
 
-        # 3. ComplexFunc JSON call extraction
+        # 3. ComplexFunc JSON call extraction (handles both [{...}] and {...})
         pred_calls = Metrics._normalize_json_calls(prediction)
         truth_calls = Metrics._normalize_json_calls(truth)
         if pred_calls is not None and truth_calls is not None and pred_calls == truth_calls:
             return 1
-
-        # 4. Final-answer extraction (last non-empty line)
-        pred_answer = Metrics._extract_final_answer(prediction)
-        if pred_answer:
-            if Metrics.normalize_text(pred_answer) == truth_norm:
-                return 1
 
         return 0
 
@@ -131,8 +266,15 @@ class Metrics:
     @staticmethod
     def f1_score(prediction, truth):
         prediction = Metrics._strip_thinking(prediction)
-        pred_tokens = Metrics.normalize_text(prediction).split()
+        if Metrics.exact_match(prediction, truth):
+            return 1.0
+        # For short ground truths (likely ToolJSON), use extracted answer
         truth_tokens = Metrics.normalize_text(truth).split()
+        if len(truth_tokens) <= 10:
+            extracted = Metrics._extract_core_answer(prediction)
+            if extracted and extracted != prediction:
+                prediction = extracted
+        pred_tokens = Metrics.normalize_text(prediction).split()
         
         if len(pred_tokens) == 0 or len(truth_tokens) == 0:
             return int(pred_tokens == truth_tokens)
@@ -151,8 +293,13 @@ class Metrics:
     @staticmethod
     def bleu_score(prediction, truth):
         prediction = Metrics._strip_thinking(prediction)
+        truth_tokens_flat = Metrics.normalize_text(truth).split()
+        if len(truth_tokens_flat) <= 10:
+            extracted = Metrics._extract_core_answer(prediction)
+            if extracted and extracted != prediction:
+                prediction = extracted
         pred_tokens = Metrics.normalize_text(prediction).split()
-        truth_tokens = [Metrics.normalize_text(truth).split()]
+        truth_tokens = [truth_tokens_flat]
         smoothie = SmoothingFunction().method4
         return sentence_bleu(truth_tokens, pred_tokens, smoothing_function=smoothie)
 
@@ -178,23 +325,60 @@ class Metrics:
         def extract_actions(text):
             if not isinstance(text, str):
                 return []
+
+            # First try extracting from code blocks
+            codeblock = Metrics._extract_json_from_codeblock(text)
             
-            # Try to parse as JSON array (ComplexFuncBench format)
-            try:
-                # Tìm mảng JSON đầu tiên trong text
-                json_match = re.search(r'\[\s*\{.*?\}\s*\]', text, re.DOTALL)
-                if json_match:
-                    parsed = json.loads(json_match.group(0))
-                    if isinstance(parsed, list) and all(isinstance(i, dict) and "name" in i for i in parsed):
-                        return [{"name": i["name"], "arguments": i.get("arguments", {})} for i in parsed]
-            except Exception:
-                pass
-            
-            # Nếu không phải JSON array, thử parse dạng ToolBench
+            # Try on codeblock first, then full text
+            for search_text in ([codeblock, text] if codeblock else [text]):
+                # Try JSON array (complete or truncated)
+                m = re.search(r'\[\s*\{', search_text)
+                if m:
+                    # Complete array
+                    try:
+                        parsed, _ = json.JSONDecoder().raw_decode(search_text[m.start():])
+                        if isinstance(parsed, list) and all(isinstance(i, dict) and "name" in i for i in parsed):
+                            return [{"name": i["name"], "arguments": i.get("arguments", {})} for i in parsed]
+                    except Exception:
+                        pass
+                    # Truncated array: extract individual complete objects
+                    partial = search_text[m.start() + 1:]
+                    objects = []
+                    decoder = json.JSONDecoder()
+                    pos = 0
+                    while pos < len(partial):
+                        while pos < len(partial) and partial[pos] in ' \t\n\r,':
+                            pos += 1
+                        if pos >= len(partial) or partial[pos] == ']':
+                            break
+                        if partial[pos] == '{':
+                            try:
+                                obj, end_idx = decoder.raw_decode(partial[pos:])
+                                if isinstance(obj, dict) and "name" in obj:
+                                    objects.append({"name": obj["name"], "arguments": obj.get("arguments", {})})
+                                pos += end_idx
+                            except json.JSONDecodeError:
+                                break
+                        else:
+                            break
+                    if objects:
+                        return objects
+
+                # Try single JSON object {"name": ...}
+                m = re.search(r'\{\s*"name"\s*:', search_text)
+                if m:
+                    try:
+                        obj, _ = json.JSONDecoder().raw_decode(search_text[m.start():])
+                        if isinstance(obj, dict) and "name" in obj:
+                            return [{"name": obj["name"], "arguments": obj.get("arguments", {})}]
+                    except Exception:
+                        pass
+
+            # Fallback: ToolBench format (Action: ... Action Input: ...)
             actions = []
             action_matches = list(re.finditer(r'Action:\s*([^\n]+)', text))
             input_matches = list(re.finditer(r'Action Input:\s*(\{.*?\})', text, re.DOTALL))
-            
+
             for i, a_match in enumerate(action_matches):
                 name = a_match.group(1).strip()
                 args = {}
@@ -204,7 +388,7 @@ class Metrics:
                     except json.JSONDecodeError:
                         args = input_matches[i].group(1).strip()
                 actions.append({"name": name, "arguments": args})
-            
+
             return actions
 
         pred_actions = extract_actions(prediction)

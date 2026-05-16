@@ -7,6 +7,8 @@ class BaseLoader(ABC):
     # Whether to enable thinking mode (e.g. Qwen3 <think> tags).
     # Default False so model outputs Action/JSON directly.
     enable_thinking = False
+    # Max tokens for LLM generation. None = use LLM client default (512).
+    max_tokens = None
     
     def __init__(self, data_path, agent_name=None):
         self.data_path = data_path

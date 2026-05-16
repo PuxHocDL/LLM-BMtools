@@ -16,41 +16,38 @@ if "%MODEL%"=="" (
     pause
     exit /b 1
 )
-if "%LIMIT%"=="" set LIMIT=100
 if "%WORKERS%"=="" set WORKERS=10
+
+REM Build optional --limit flag
+set LIMIT_ARG=
+if not "%LIMIT%"=="" if /i not "%LIMIT%"=="None" set LIMIT_ARG=--limit %LIMIT%
 
 echo ===================================================
 echo  MODEL: %MODEL%  LIMIT: %LIMIT%  WORKERS: %WORKERS%
 echo  RUNNING: BASELINE + ENHANCED + 5 STRATEGIES
 echo ===================================================
-
 echo.
-echo [1/7] BASELINE
-python main.py --dataset all --model %MODEL% --limit %LIMIT% --workers %WORKERS%
 
-echo.
-echo [2/7] ENHANCED
-python main.py --dataset all --model %MODEL% --limit %LIMIT% --workers %WORKERS% --enhanced
 
 echo.
 echo [3/7] STRATEGY 1: Prompt Rewrite
-python main.py --dataset all --model %MODEL% --limit %LIMIT% --workers %WORKERS% --strategy s1_prompt
+python main.py --dataset all --model %MODEL% %LIMIT_ARG% --workers %WORKERS% --strategy s1_prompt
 
 echo.
 echo [4/7] STRATEGY 2: Tool Compression
-python main.py --dataset all --model %MODEL% --limit %LIMIT% --workers %WORKERS% --strategy s2_compress
+python main.py --dataset all --model %MODEL% %LIMIT_ARG% --workers %WORKERS% --strategy s2_compress
 
 echo.
 echo [5/7] STRATEGY 3: Chain-of-Thought
-python main.py --dataset all --model %MODEL% --limit %LIMIT% --workers %WORKERS% --strategy s3_cot
+python main.py --dataset all --model %MODEL% %LIMIT_ARG% --workers %WORKERS% --strategy s3_cot
 
 echo.
 echo [6/7] STRATEGY 4: Two-Stage LLM
-python main.py --dataset all --model %MODEL% --limit %LIMIT% --workers %WORKERS% --strategy s4_twostage
+python main.py --dataset all --model %MODEL% %LIMIT_ARG% --workers %WORKERS% --strategy s4_twostage
 
 echo.
 echo [7/7] STRATEGY 5: Few-Shot
-python main.py --dataset all --model %MODEL% --limit %LIMIT% --workers %WORKERS% --strategy s5_fewshot
+python main.py --dataset all --model %MODEL% %LIMIT_ARG% --workers %WORKERS% --strategy s5_fewshot
 
 echo.
 echo ===================================================
