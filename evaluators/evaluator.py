@@ -32,12 +32,18 @@ class Evaluator:
         }
 
         try:
-            # Predict (use loader-specific stop sequences and thinking mode)
-            stop = self.data_loader.stop_sequences
-            enable_thinking = getattr(self.data_loader, 'enable_thinking', False)
-            prediction = self.client.generate(prompt, stop=stop, enable_thinking=enable_thinking)
+            if hasattr(self.data_loader, 'execute_debug_loop'):
+                tqdm.write(f"[Sample {i}] Starting debug loop wrapper...")
+                prediction = self.data_loader.execute_debug_loop(self.client, i, sample)
+                elapsed = time.time() - start_time
+            else:
+                # Predict (use loader-specific stop sequences and thinking mode)
+                stop = self.data_loader.stop_sequences
+                enable_thinking = getattr(self.data_loader, 'enable_thinking', False)
+                prediction = self.client.generate(prompt, stop=stop, enable_thinking=enable_thinking)
+                elapsed = time.time() - start_time
+
             res["prediction"] = prediction
-            elapsed = time.time() - start_time
 
             if prediction == "__ERROR_CONTEXT_LENGTH__":
                 res["error"] = "Context Length Exceeded"

@@ -31,7 +31,16 @@ class LLMClient:
         """Call API — timeout is handled by httpx."""
         return self.client.chat.completions.create(**kwargs)
 
-    def generate(self, prompt_or_messages, system_message="You are a helpful assistant.", max_retries=1, stop=None, enable_thinking=False):
+    def generate(
+        self,
+        prompt_or_messages,
+        system_message="You are a helpful assistant.",
+        max_retries=1,
+        stop=None,
+        enable_thinking=False,
+        temperature=None,
+        max_tokens=1024,
+    ):
         if isinstance(prompt_or_messages, str):
             messages = [
                 {"role": "system", "content": system_message},
@@ -43,11 +52,13 @@ class LLMClient:
         if stop is None:
             stop = ["\nObservation:", "\nCall result:", "Observation:", "Call result:", "\nThought:", "\n{\""]
             
+        request_temperature = self.temperature if temperature is None else temperature
+
         kwargs = dict(
             model=self.model_name,
             messages=messages,
-            temperature=max(self.temperature, 0.6) if enable_thinking else self.temperature,
-            max_tokens=1024,
+            temperature=max(request_temperature, 0.6) if enable_thinking else request_temperature,
+            max_tokens=max_tokens,
         )
         if enable_thinking:
             kwargs["extra_body"] = {"chat_template_kwargs": {"enable_thinking": True}}

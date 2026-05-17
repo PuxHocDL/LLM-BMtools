@@ -80,28 +80,11 @@ class Metrics:
         idx = text.rfind('</think>')
         if idx != -1:
             text = text[idx + len('</think>'):]
-        text = text.strip()
-        # Check for "ANSWER:" prefix pattern
-        ans_match = re.search(r'(?:ANSWER|Answer|answer)\s*:\s*(.+)', text, re.DOTALL)
-        if ans_match:
-            return ans_match.group(1).strip()
-        # Take all remaining text after </think> (not just last line)
-        lines = [l.strip() for l in text.splitlines() if l.strip()]
+        # Take last non-empty line(s) — handles multi-line short answers
+        lines = [l.strip() for l in text.strip().splitlines() if l.strip()]
         if lines:
             return lines[-1]
         return ""
-
-    @staticmethod
-    def _normalize_number(text):
-        """Normalize numeric strings: '42.0' -> '42', '1,000' -> '1000'."""
-        text = text.replace(',', '')
-        try:
-            num = float(text)
-            if num == int(num):
-                return str(int(num))
-            return str(num)
-        except (ValueError, OverflowError):
-            return None
 
     # ------------------------------------------------------------------
 
@@ -133,33 +116,8 @@ class Metrics:
         # 4. Final-answer extraction (last non-empty line)
         pred_answer = Metrics._extract_final_answer(prediction)
         if pred_answer:
-            pred_answer_norm = Metrics.normalize_text(pred_answer)
-            if pred_answer_norm == truth_norm:
+            if Metrics.normalize_text(pred_answer) == truth_norm:
                 return 1
-            # 4b. Numeric comparison (use raw stripped text, not normalize_text)
-            pred_num = Metrics._normalize_number(pred_answer.strip())
-            truth_num = Metrics._normalize_number(truth.strip())
-            if pred_num and truth_num and pred_num == truth_num:
-                return 1
-
-        # 5. Numeric comparison on raw stripped text
-        pred_num = Metrics._normalize_number(prediction.strip())
-        truth_num = Metrics._normalize_number(truth.strip())
-        if pred_num and truth_num and pred_num == truth_num:
-            return 1
-
-        # 6. Set-based comparison for comma-separated lists
-        if ',' in truth:
-            truth_items = set(x.strip().lower() for x in truth.split(',') if x.strip())
-            # Try on raw prediction
-            pred_items = set(x.strip().lower() for x in prediction.split(',') if x.strip())
-            if len(truth_items) >= 2 and truth_items == pred_items:
-                return 1
-            # Try on extracted final answer
-            if pred_answer:
-                pred_items = set(x.strip().lower() for x in pred_answer.split(',') if x.strip())
-                if truth_items == pred_items:
-                    return 1
 
         return 0
 
@@ -175,16 +133,16 @@ class Metrics:
         prediction = Metrics._strip_thinking(prediction)
         pred_tokens = Metrics.normalize_text(prediction).split()
         truth_tokens = Metrics.normalize_text(truth).split()
-        
+
         if len(pred_tokens) == 0 or len(truth_tokens) == 0:
             return int(pred_tokens == truth_tokens)
-            
+
         common_tokens = Counter(pred_tokens) & Counter(truth_tokens)
         num_same = sum(common_tokens.values())
-        
+
         if num_same == 0:
             return 0.0
-            
+
         precision = 1.0 * num_same / len(pred_tokens)
         recall = 1.0 * num_same / len(truth_tokens)
         f1 = (2 * precision * recall) / (precision + recall)
@@ -220,7 +178,7 @@ class Metrics:
         def extract_actions(text):
             if not isinstance(text, str):
                 return []
-            
+
             # Try to parse as JSON array (ComplexFuncBench format)
             try:
                 # Tìm mảng JSON đầu tiên trong text
@@ -231,12 +189,12 @@ class Metrics:
                         return [{"name": i["name"], "arguments": i.get("arguments", {})} for i in parsed]
             except Exception:
                 pass
-            
+
             # Nếu không phải JSON array, thử parse dạng ToolBench
             actions = []
             action_matches = list(re.finditer(r'Action:\s*([^\n]+)', text))
             input_matches = list(re.finditer(r'Action Input:\s*(\{.*?\})', text, re.DOTALL))
-            
+
             for i, a_match in enumerate(action_matches):
                 name = a_match.group(1).strip()
                 args = {}
@@ -246,12 +204,12 @@ class Metrics:
                     except json.JSONDecodeError:
                         args = input_matches[i].group(1).strip()
                 actions.append({"name": name, "arguments": args})
-            
+
             return actions
 
         pred_actions = extract_actions(prediction)
         truth_actions = extract_actions(truth)
-        
+
         if not pred_actions or not truth_actions:
             return 0
 
@@ -260,15 +218,15 @@ class Metrics:
             if pred_actions[0]["name"].lower() == truth_actions[0]["name"].lower():
                 return 1
             return 0
-        
+
         # Nếu là ComplexFuncBench (có thể có nhiều action gọi song song)
         # Check xem tất cả các name trong truth có xuất hiện trong pred không (bỏ qua args)
         pred_names = [p["name"].lower() for p in pred_actions]
         truth_names = [t["name"].lower() for t in truth_actions]
-        
+
         if sorted(pred_names) == sorted(truth_names):
             return 1
-            
+
         return 0
 
     @staticmethod
@@ -277,20 +235,31 @@ class Metrics:
         Sử dụng LLM để đánh giá xem câu trả lời của mô hình có giải quyết được vấn đề
         hoặc có chứa đúng thông tin như đáp án (truth) hay không.
         """
-        prompt = (
-            f"Question: {question}\n"
-            f"Correct answer: {truth}\n"
-            f"Model output: {prediction}\n\n"
-            "Does the model output contain the correct answer? Reply ONLY 'YES' or 'NO'."
-        )
+        prompt = f"""
+You are an impartial judge evaluating an AI model's response.
+Question/Task: {question}
+Ground Truth: {truth}
+Model Prediction: {prediction}
 
+Does the model prediction correctly answer the question or contain the essential information from the ground truth?
+Answer with ONLY a valid JSON object containing:
+- "reasoning": A short explanation of your judgment.
+- "score": 1 if correct, 0 if incorrect.
+"""
         try:
-            response = judge_client.generate(prompt, stop=["\n"], max_retries=3)
-            if not response or response.startswith("__ERROR"):
-                raise ValueError(f"Judge API error: {response}")
-            answer = response.strip().upper()
-            if "YES" in answer:
-                return 1
-            return 0
+            response = judge_client.generate_json(prompt)
+            if not response:
+                return 0
+            # Remove markdown formatting if present
+            if response.startswith("```json"):
+                response = response[7:]
+            if response.startswith("```"):
+                response = response[3:]
+            if response.endswith("```"):
+                response = response[:-3]
+            response = response.strip()
+
+            result = json.loads(response)
+            return result.get("score", 0)
         except Exception as e:
             raise ValueError(f"LLM Judge Error: {e}")

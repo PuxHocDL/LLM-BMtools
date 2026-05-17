@@ -1,0 +1,33 @@
+# Modal Configuration for LLM Evaluation
+# Deploy models first, then fill in the api_base URLs
+
+agents:
+  # Granite-3.3-8b
+  granite-33-8b:
+    model: ibm-granite/granite-3.3-8b-instruct
+    # Update this URL after deployment: modal serve deploy_granite.py
+    api_base: https://<workspace>--granite-33-8b-instruct--serve/v1
+    api_key: auto
+    temperature: 0.0
+    max_steps: 16
+    timeout: 60.0
+
+  # Llama-4-maverick-17b
+  llama-4-maverick-17b:
+    model: meta-llama/Llama-4-Maverick-17B-128E-Instruct
+    # Update this URL after deployment: modal serve deploy_llama4.py
+    api_base: https://<workspace>--llama-4-maverick-17b-instruct--serve/v1
+    api_key: auto
+    temperature: 0.0
+    max_steps: 16
+    timeout: 60.0
+
+  # GPT-oss-20b
+  gpt-oss-20b:
+    model: openai/gpt-oss-20b
+    # Update this URL after deployment: modal serve deploy_gptoss.py
+    api_base: https://<workspace>--gpt-oss-20b--serve/v1
+    api_key: auto
+    temperature: 0.0
+    max_steps: 16
+    timeout: 60.0

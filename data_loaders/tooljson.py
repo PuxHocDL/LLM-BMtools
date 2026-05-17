@@ -7,7 +7,7 @@ class ToolJSONLoader(BaseLoader):
     stop_sequences = []  # No stop sequences for QA-style responses
     enable_thinking = True  # ToolJSON benefits from thinking (answer after </think>)
     
-    def __init__(self, data_path, base_repo_dir="data/toolJSONprocessing", agent_name=None):
+    def __init__(self, data_path, base_repo_dir="Data/toolJSONprocessing", agent_name=None):
         self.base_repo_dir = base_repo_dir
         super().__init__(data_path, agent_name=agent_name)
 
@@ -38,8 +38,32 @@ class ToolJSONLoader(BaseLoader):
         json_content = ""
         try:
             with open(api_res_full_path, 'r', encoding='utf-8') as f:
-                raw_json = f.read()
-                json_content = JSONPruner.prune(raw_json, question, top_k=15, api_query=api_query)
+                data = json.load(f)
+
+            # Extract the specific query response from the 3-level nested dict
+            # Structure: {domain: {endpoint: {query_args: response}}}
+            query_key = api_query.replace("'", '"')  # Normalize quotes
+            if query_key.startswith('{'):
+                # Find the matching endpoint and query
+                for domain_val in data.values():
+                    if isinstance(domain_val, dict):
+                        for endpoint_data in domain_val.values():
+                            if isinstance(endpoint_data, dict) and query_key in endpoint_data:
+                                response = endpoint_data[query_key]
+                                # Return the response as JSON (preserve room_count field)
+                                json_content = json.dumps(response, indent=2)
+                                break
+                        if json_content:
+                            break
+                    if json_content:
+                        break
+
+            # Fallback to JSONPruner if direct extraction fails
+            if not json_content:
+                with open(api_res_full_path, 'r', encoding='utf-8') as f:
+                    raw_json = f.read()
+                    json_content = JSONPruner.prune(raw_json, question, top_k=15, api_query=api_query)
+
         except Exception as e:
             json_content = f"<Error loading JSON: {e}>"
 
