@@ -3,8 +3,6 @@
 An evaluation pipeline and three plug-in improvements for the task of
 **answering questions over large JSON tool outputs** with Large Language Models.
 
-> Course project — CS222, University of Information Technology (UIT), VNU-HCM.
-
 ---
 
 ## 1. Background
@@ -91,7 +89,7 @@ extensions/                  The three improvements
 
 ```bash
 git clone <repo-url>
-cd CS222_final
+cd LLM-BMtools
 pip install -r requirements.txt
 ```
 
@@ -199,10 +197,6 @@ planning step adds more noise than benefit.
 
 ## 11. Authors
 
-Group 8 — CS222, University of Information Technology, VNU-HCM.
-
 - Nguyễn Minh Triết
 - Nguyễn Minh Bảo
 - Nguyễn Xuân Phúc
-
-Advisor: Dr. Nguyễn Thị Quý.
