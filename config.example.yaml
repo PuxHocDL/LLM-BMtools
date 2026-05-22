@@ -1,69 +1,42 @@
 # ============================================================
-# CONFIG EXAMPLE — Copy thành config.yaml rồi điền thông tin
-# cp config.example.yaml config.yaml
+# CONFIG EXAMPLE — copy thành config.yaml rồi điền thông tin
+#   cp config.example.yaml config.yaml
+#
+# Mỗi agent là một endpoint tương thích OpenAI (vLLM, Modal, OpenAI...).
+# Ba mô hình khảo sát trong báo cáo: Granite-3.3-8B, GPT-OSS-20B,
+# Devstral-Small-2507. Judge: Llama-3.1-70B-Instruct.
 # ============================================================
 
 agents:
 
-  # ── [Tên]: Qwen ──────────────────────────────────────────
-  qwen:
-    model: Qwen/Qwen3.5-35B-A3B
-    api_base: https://YOUR_MODAL_URL/v1          # <-- ĐIỀN VÀO
-    api_key: sk-mgpux-XXXXXXXX                   # <-- ĐIỀN VÀO
+  # ── Granite-3.3-8B — mô hình mã nguồn mở phổ thông ───────
+  granite:
+    model: ibm-granite/granite-3.3-8b-instruct
+    api_base: https://YOUR_ENDPOINT/v1            # <-- ĐIỀN VÀO
+    api_key: YOUR_API_KEY                         # <-- ĐIỀN VÀO
     temperature: 0.0
-    max_steps: 16
-    timeout: 30.0
+    timeout: 180.0
 
-  # ── [Tên]: Gemma ─────────────────────────────────────────
-  gemma:
-    model: google/gemma-4-31b
-    api_base: https://YOUR_MODAL_URL/v1          # <-- ĐIỀN VÀO
-    api_key: sk-mgpux-XXXXXXXX                   # <-- ĐIỀN VÀO
+  # ── GPT-OSS-20B — mô hình mã nguồn mở trung bình ─────────
+  gptoss:
+    model: openai/gpt-oss-20b
+    api_base: https://YOUR_ENDPOINT/v1            # <-- ĐIỀN VÀO
+    api_key: YOUR_API_KEY                         # <-- ĐIỀN VÀO
     temperature: 0.0
-    max_steps: 16
-    timeout: 30.0
+    timeout: 180.0
 
-  # ── [Tên]: GLM ───────────────────────────────────────────
-  glm:
-    model: zai-org/GLM-4.7-Flash
-    api_base: https://YOUR_MODAL_URL/v1          # <-- ĐIỀN VÀO
-    api_key: sk-mgpux-XXXXXXXX                   # <-- ĐIỀN VÀO
+  # ── Devstral-Small-2507 — chuyên tool-calling / coding ───
+  devstral:
+    model: mistralai/Devstral-Small-2507
+    api_base: https://YOUR_ENDPOINT/v1            # <-- ĐIỀN VÀO
+    api_key: YOUR_API_KEY                         # <-- ĐIỀN VÀO
     temperature: 0.0
-    max_steps: 16
-    timeout: 30.0
+    timeout: 180.0
 
-  # ── [Tên]: LFM ───────────────────────────────────────────
-  lfm:
-    model: LiquidAI/LFM2-24B-A2B
-    api_base: https://YOUR_MODAL_URL/v1          # <-- ĐIỀN VÀO
-    api_key: sk-mgpux-XXXXXXXX                   # <-- ĐIỀN VÀO
-    temperature: 0.0
-    max_steps: 16
-    timeout: 30.0
-
-  # ── [Tên]: Nemotron ──────────────────────────────────────
-  nemotron:
-    model: nvidia/Nemotron-Cascade-2-16B-A3B
-    api_base: https://YOUR_MODAL_URL/v1          # <-- ĐIỀN VÀO
-    api_key: sk-mgpux-XXXXXXXX                   # <-- ĐIỀN VÀO
-    temperature: 0.0
-    max_steps: 16
-    timeout: 30.0
-
-  # ── [Tên]: Llama ─────────────────────────────────────────
+  # ── Llama-3.1-70B-Instruct — dùng làm LLM-as-a-judge ─────
   llama:
-    model: meta-llama/Meta-Llama-3.1-70B-Instruct
-    api_base: https://YOUR_MODAL_URL/v1          # <-- ĐIỀN VÀO
-    api_key: sk-mgpux-XXXXXXXX                   # <-- ĐIỀN VÀO
+    model: meta-llama/Llama-3.1-70B-Instruct
+    api_base: https://YOUR_ENDPOINT/v1            # <-- ĐIỀN VÀO
+    api_key: YOUR_API_KEY                         # <-- ĐIỀN VÀO
     temperature: 0.0
-    max_steps: 16
-    timeout: 30.0
-
-  # ── [Tên]: GPT-4o ────────────────────────────────────────
-  gpt-4o:
-    model: gpt-4o
-    api_base: https://api.openai.com/v1
-    api_key: sk-proj-XXXXXXXX                    # <-- ĐIỀN VÀO
-    temperature: 0.0
-    max_steps: 16
-    timeout: 30.0
+    timeout: 180.0

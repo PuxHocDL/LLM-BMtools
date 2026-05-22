@@ -44,7 +44,17 @@ class LLMClient:
         finally:
             pool.shutdown(wait=False)
 
-    def generate(self, prompt_or_messages, system_message="You are a helpful assistant.", max_retries=1, stop=None, enable_thinking=False, max_tokens=None):
+    def generate(
+        self,
+        prompt_or_messages,
+        system_message="You are a helpful assistant.",
+        max_retries=1,
+        stop=None,
+        enable_thinking=False,
+        max_tokens=None,
+        temperature=None,
+        top_p=None,
+    ):
         is_base_model = ("llama" in self.model_name.lower() and "instruct" not in self.model_name.lower())
 
         if isinstance(prompt_or_messages, str):
@@ -74,9 +84,16 @@ class LLMClient:
 
         kwargs = dict(
             model=self.model_name,
-            temperature=max(self.temperature, 0.6) if enable_thinking and supports_thinking else self.temperature,
+            temperature=(
+                max(self.temperature, 0.6)
+                if enable_thinking and supports_thinking and temperature is None
+                else self.temperature if temperature is None
+                else temperature
+            ),
             max_tokens=max_tokens or 2048,
         )
+        if top_p is not None:
+            kwargs["top_p"] = top_p
         
         if is_base_model:
             kwargs["prompt"] = raw_prompt

@@ -16,6 +16,9 @@ data/
 # Results — mỗi người tự chạy tự có
 results/
 
+# Ad-hoc analysis / deployment scripts — không thuộc pipeline chính
+scripts/
+
 # IDE
 .vscode/
 .idea/
