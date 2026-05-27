@@ -5,6 +5,15 @@
 # Mỗi agent là một endpoint tương thích OpenAI (vLLM, Modal, OpenAI...).
 # Ba mô hình khảo sát trong báo cáo: Granite-3.3-8B, GPT-OSS-20B,
 # Devstral-Small-2507. Judge: Llama-3.1-70B-Instruct.
+#
+# Cách nhanh nhất để có 4 endpoint: dùng m-gpux serve (mỗi profile = 1 model)
+#   pip install m-gpux modal && modal setup
+#   m-gpux account add        # tạo profile granite / gptoss / devstral / llama
+#   m-gpux account switch granite && m-gpux serve deploy   # rồi lặp lại
+# Sau khi deploy xong, URL có dạng:
+#   https://<profile>--m-gpux-llm-api-serve.modal.run/v1
+# và API key dạng mgpx_... được in trong terminal.
+# Chi tiết: xem mục 6.1 trong README.md.
 # ============================================================
 
 agents:
@@ -12,31 +21,31 @@ agents:
   # ── Granite-3.3-8B — mô hình mã nguồn mở phổ thông ───────
   granite:
     model: ibm-granite/granite-3.3-8b-instruct
-    api_base: https://YOUR_ENDPOINT/v1            # <-- ĐIỀN VÀO
-    api_key: YOUR_API_KEY                         # <-- ĐIỀN VÀO
+    api_base: https://YOUR_ENDPOINT/v1            # <-- ĐIỀN VÀO (vd. https://<profile>--m-gpux-llm-api-serve.modal.run/v1)
+    api_key: YOUR_API_KEY                         # <-- ĐIỀN VÀO (vd. mgpx_... từ `m-gpux serve keys create`)
     temperature: 0.0
     timeout: 180.0
 
   # ── GPT-OSS-20B — mô hình mã nguồn mở trung bình ─────────
   gptoss:
     model: openai/gpt-oss-20b
-    api_base: https://YOUR_ENDPOINT/v1            # <-- ĐIỀN VÀO
-    api_key: YOUR_API_KEY                         # <-- ĐIỀN VÀO
+    api_base: https://YOUR_ENDPOINT/v1            # <-- ĐIỀN VÀO (vd. https://<profile>--m-gpux-llm-api-serve.modal.run/v1)
+    api_key: YOUR_API_KEY                         # <-- ĐIỀN VÀO (vd. mgpx_... từ `m-gpux serve keys create`)
     temperature: 0.0
     timeout: 180.0
 
   # ── Devstral-Small-2507 — chuyên tool-calling / coding ───
   devstral:
     model: mistralai/Devstral-Small-2507
-    api_base: https://YOUR_ENDPOINT/v1            # <-- ĐIỀN VÀO
-    api_key: YOUR_API_KEY                         # <-- ĐIỀN VÀO
+    api_base: https://YOUR_ENDPOINT/v1            # <-- ĐIỀN VÀO (vd. https://<profile>--m-gpux-llm-api-serve.modal.run/v1)
+    api_key: YOUR_API_KEY                         # <-- ĐIỀN VÀO (vd. mgpx_... từ `m-gpux serve keys create`)
     temperature: 0.0
     timeout: 180.0
 
   # ── Llama-3.1-70B-Instruct — dùng làm LLM-as-a-judge ─────
   llama:
     model: meta-llama/Llama-3.1-70B-Instruct
-    api_base: https://YOUR_ENDPOINT/v1            # <-- ĐIỀN VÀO
-    api_key: YOUR_API_KEY                         # <-- ĐIỀN VÀO
+    api_base: https://YOUR_ENDPOINT/v1            # <-- ĐIỀN VÀO (vd. https://<profile>--m-gpux-llm-api-serve.modal.run/v1)
+    api_key: YOUR_API_KEY                         # <-- ĐIỀN VÀO (vd. mgpx_... từ `m-gpux serve keys create`)
     temperature: 0.0
     timeout: 180.0

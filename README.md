@@ -4,7 +4,8 @@ An evaluation pipeline and three plug-in improvements for the task of
 **answering questions over large JSON tool outputs** with Large Language Models.
 
 > Want the step-by-step "I've never run an LLM benchmark before" walkthrough?
-> Open [`docs/setup.html`](docs/setup.html) in any browser.
+> Open [`docs/setup.html`](docs/setup.html) in any browser, or read it online
+> at https://puxhocdl.github.io/LLM-BMtools/ (auto-deployed on every push).
 
 ---
 
@@ -95,6 +96,10 @@ baseline/                    Self-contained copy of the paper baseline
   generate_qa_pairs/tasks/   Per-endpoint gold-answer logic
 docs/
   setup.html                 Full step-by-step setup guide as HTML docs
+  index.html                 Redirect landing page
+.github/workflows/
+  deploy-docs.yml            CI → GitHub Pages
+  ci.yml                     Syntax + HTML lint
 data/toolJSONprocessing/     Upstream package (Kate et al., 2025)
   generate_qa_pairs/data/    QA pairs, API responses, schemas
 ```
@@ -139,6 +144,77 @@ agents:
     temperature: 0.0
     timeout: 180.0
 ```
+
+### 6.1. Provisioning the LLMs with `m-gpux serve` (recommended)
+
+If you don't already have an OpenAI-compatible endpoint, the easiest way to
+get one is the [`m-gpux`](https://github.com/PuxHocDL/m-gpux) CLI, which
+deploys a model on [Modal](https://modal.com) as a vLLM-backed,
+OpenAI-compatible API with bearer-token auth. Each `m-gpux serve deploy`
+creates one Modal app per profile, so the standard workflow is **one profile
+per model**:
+
+```bash
+pip install m-gpux modal
+modal setup                                 # one-time Modal login
+
+# Create one profile per model so the three apps don't collide
+m-gpux account add        # name it "granite"
+m-gpux account add        # name it "gptoss"
+m-gpux account add        # name it "devstral"
+
+# Provision each model (interactive — pick the HF id under "(custom)")
+m-gpux account switch granite  && m-gpux serve deploy
+m-gpux account switch gptoss   && m-gpux serve deploy
+m-gpux account switch devstral && m-gpux serve deploy
+```
+
+Each `serve deploy` prints a persistent URL and an API key, e.g.:
+
+```
+api_base : https://granite--m-gpux-llm-api-serve.modal.run/v1
+api_key  : mgpx_<random>
+model    : ibm-granite/granite-3.3-8b-instruct
+```
+
+Drop those into `config.yaml`:
+
+```yaml
+agents:
+  granite:
+    model:    ibm-granite/granite-3.3-8b-instruct
+    api_base: https://granite--m-gpux-llm-api-serve.modal.run/v1
+    api_key:  mgpx_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    temperature: 0.0
+    timeout: 600.0
+  gptoss:
+    model:    openai/gpt-oss-20b
+    api_base: https://gptoss--m-gpux-llm-api-serve.modal.run/v1
+    api_key:  mgpx_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    temperature: 0.0
+    timeout: 600.0
+  devstral:
+    model:    mistralai/Devstral-Small-2507
+    api_base: https://devstral--m-gpux-llm-api-serve.modal.run/v1
+    api_key:  mgpx_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    temperature: 0.0
+    timeout: 600.0
+```
+
+Useful follow-ups:
+
+```bash
+m-gpux serve dashboard     # live latency / request metrics
+m-gpux serve logs          # tail vLLM logs
+m-gpux serve warmup        # pre-warm before a benchmark sweep
+m-gpux serve keys create   # rotate API keys
+m-gpux stop                # stop the current profile's serve app
+m-gpux billing usage --days 7 --all
+```
+
+For the `baseline/` scripts (which read `LLM_PROVIDER` from `baseline/.env`),
+the same Modal URLs work — just set `LLM_PROVIDER=openai` and point the OpenAI
+client at the `api_base` / `api_key` pair above.
 
 ## 7. Data
 

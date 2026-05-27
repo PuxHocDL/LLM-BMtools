@@ -274,9 +274,10 @@
 
   <h4>Set up an LLM</h4>
   <a href="#step-4-llm">4. Pick an LLM provider</a>
-  <a href="#step-4a-openai">4a. OpenAI-compatible (vLLM, OpenAI, Modal)</a>
-  <a href="#step-4b-ollama">4b. Local Ollama</a>
-  <a href="#step-4c-azure">4c. Azure OpenAI</a>
+  <a href="#step-4-mgpux" class="sub">4a. m-gpux serve on Modal (recommended)</a>
+  <a href="#step-4a-openai" class="sub">4b. Other OpenAI-compatible (vLLM, OpenAI)</a>
+  <a href="#step-4b-ollama" class="sub">4c. Local Ollama</a>
+  <a href="#step-4c-azure" class="sub">4d. Azure OpenAI</a>
 
   <h4>Data</h4>
   <a href="#step-5-data">5. Get the ToolJSON data</a>
@@ -388,12 +389,71 @@ pip install -r baseline/requirements.txt</code></pre>
 
 <h2 id="step-4-llm">4. Pick an LLM provider</h2>
 <p>You need at least one LLM endpoint that the scripts can talk to. The
-project supports any provider that exposes an OpenAI-compatible HTTP API. Three
+project supports any provider that exposes an OpenAI-compatible HTTP API. Four
 common choices:</p>
 
-<h3 id="step-4a-openai">4a — Any OpenAI-compatible endpoint (recommended)</h3>
+<h3 id="step-4-mgpux">4a — <code>m-gpux serve</code> on Modal <span class="pill">recommended</span></h3>
 <div class="step"><div class="n">A</div><div class="body">
-  <div class="title">Use vLLM, OpenAI, Modal, Together, Anyscale, etc.</div>
+  <div class="title">Spin up vLLM-backed, OpenAI-compatible endpoints from your terminal</div>
+  <p><a href="https://github.com/PuxHocDL/m-gpux"><code>m-gpux</code></a> is a CLI that deploys a Hugging Face model on <a href="https://modal.com">Modal</a> behind an OpenAI-compatible API with bearer-token auth. One <code>m-gpux serve deploy</code> command per model — Modal handles GPU provisioning, vLLM, scaling, and gives you a persistent URL.</p>
+  <p>Install and log in to Modal:</p>
+  <pre><code>pip install m-gpux modal
+modal setup          # one-time browser login</code></pre>
+  <p>Each <code>serve deploy</code> creates one app per profile, so create one profile per model:</p>
+  <pre><code>m-gpux account add     # name it "granite"
+m-gpux account add     # name it "gptoss"
+m-gpux account add     # name it "devstral"
+m-gpux account add     # name it "llama"   (for the judge)</code></pre>
+  <p>Provision each model. When the picker shows the curated list, scroll to <strong>(custom)</strong> and paste the HF id:</p>
+  <pre><code>m-gpux account switch granite  &amp;&amp; m-gpux serve deploy
+# model id: ibm-granite/granite-3.3-8b-instruct   GPU: A10G or A100
+
+m-gpux account switch gptoss   &amp;&amp; m-gpux serve deploy
+# model id: openai/gpt-oss-20b                    GPU: A100
+
+m-gpux account switch devstral &amp;&amp; m-gpux serve deploy
+# model id: mistralai/Devstral-Small-2507         GPU: A100
+
+m-gpux account switch llama    &amp;&amp; m-gpux serve deploy
+# model id: meta-llama/Llama-3.1-70B-Instruct     GPU: H100</code></pre>
+
+  <p>Each deploy prints something like:</p>
+  <pre><code>api_base : https://granite--m-gpux-llm-api-serve.modal.run/v1
+api_key  : mgpx_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+model    : ibm-granite/granite-3.3-8b-instruct</code></pre>
+
+  <p>Drop those four pairs straight into <code>config.yaml</code>:</p>
+  <pre><code>agents:
+  granite:
+    model:    ibm-granite/granite-3.3-8b-instruct
+    api_base: https://granite--m-gpux-llm-api-serve.modal.run/v1
+    api_key:  mgpx_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    temperature: 0.0
+    timeout: 600.0
+  # gptoss / devstral / llama — same pattern, different profile</code></pre>
+
+  <p>Other useful commands while a benchmark sweep is running:</p>
+  <table>
+    <thead><tr><th>Command</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td><code>m-gpux serve dashboard</code></td><td>Live latency / token throughput / request counts</td></tr>
+      <tr><td><code>m-gpux serve logs</code></td><td>Tail vLLM logs from the running container</td></tr>
+      <tr><td><code>m-gpux serve warmup</code></td><td>Pre-warm before launching the benchmark (avoids cold-start spikes)</td></tr>
+      <tr><td><code>m-gpux serve keys create</code></td><td>Rotate the API key (revoke the old one with <code>keys revoke</code>)</td></tr>
+      <tr><td><code>m-gpux stop</code></td><td>Stop the current profile's serve app</td></tr>
+      <tr><td><code>m-gpux billing usage --days 7 --all</code></td><td>Cost so far across all profiles</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout tip">
+    <span class="label">Tip — keep-warm</span>
+    <p>During an active benchmark sweep, choose <strong>"Keep 1 warm"</strong> in the interactive prompt (or run <code>m-gpux serve warmup</code> before the sweep). Otherwise Modal scales to zero between calls and you'll add 30–60 s of cold-start latency to every endpoint request.</p>
+  </div>
+</div></div>
+
+<h3 id="step-4a-openai">4b — Any other OpenAI-compatible endpoint</h3>
+<div class="step"><div class="n">B</div><div class="body">
+  <div class="title">Use vLLM, OpenAI, Together, Anyscale, vLLM-on-RunPod, etc.</div>
   <p>This is what the <em>enhancement methods</em> at the project root use. Copy the example config and fill it in:</p>
   <pre><code>cp config.example.yaml config.yaml</code></pre>
   <p>Open <code>config.yaml</code> and set <code>api_base</code> and <code>api_key</code> for each of <code>granite</code>, <code>gptoss</code>, <code>devstral</code>, and the judge model <code>llama</code>. If you only have one endpoint, you can point all four entries at the same endpoint and just change the <code>model</code> field.</p>
@@ -411,8 +471,8 @@ common choices:</p>
   </div>
 </div></div>
 
-<h3 id="step-4b-ollama">4b — Local Ollama (no cloud key needed)</h3>
-<div class="step"><div class="n">B</div><div class="body">
+<h3 id="step-4b-ollama">4c — Local Ollama (no cloud key needed)</h3>
+<div class="step"><div class="n">C</div><div class="body">
   <div class="title">Run open-weight models on your own machine</div>
   <p>Install <a href="https://ollama.com">Ollama</a>, then pull the three models we used:</p>
   <pre><code>ollama pull granite3.3:8b
@@ -429,8 +489,8 @@ ollama pull devstral:24b</code></pre>
   <p>For the baseline scripts (<code>baseline/</code>), instead set <code>LLM_PROVIDER=local</code> in <code>baseline/.env</code>.</p>
 </div></div>
 
-<h3 id="step-4c-azure">4c — Azure OpenAI (paper's setup)</h3>
-<div class="step"><div class="n">C</div><div class="body">
+<h3 id="step-4c-azure">4d — Azure OpenAI (paper's setup)</h3>
+<div class="step"><div class="n">D</div><div class="body">
   <div class="title">Use the same setup as Kate et al.</div>
   <p>Only relevant if you have an Azure OpenAI subscription. In <code>baseline/.env</code> set:</p>
   <pre><code>LLM_PROVIDER=azure
