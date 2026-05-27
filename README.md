@@ -3,6 +3,9 @@
 An evaluation pipeline and three plug-in improvements for the task of
 **answering questions over large JSON tool outputs** with Large Language Models.
 
+> Want the step-by-step "I've never run an LLM benchmark before" walkthrough?
+> Open [`docs/setup.html`](docs/setup.html) in any browser.
+
 ---
 
 ## 1. Background
@@ -13,7 +16,7 @@ characters long** and must extract the right information to answer the user.
 
 Most prior work focuses on *tool selection* and *generating the tool call*, and
 overlooks the final step — *processing the tool output*. The base study,
-*"How Good Are LLMs at Processing Tool Outputs?"* (Kate et al., EACL 2026),
+*"How Good Are LLMs at Processing Tool Outputs?"* (Kate et al., 2025),
 shows that even strong models stay below 90% accuracy on this task using plain
 zero-shot prompting.
 
@@ -66,7 +69,7 @@ Methods (II) and (III) both operate on the pruned JSON produced by (I).
 ## 4. Repository layout
 
 ```
-main.py                      Single entry point
+main.py                      Entry point for the three improvement methods
 config.example.yaml          Model endpoints — copy to config.yaml
 requirements.txt
 core/
@@ -83,13 +86,34 @@ extensions/                  The three improvements
   pruning/                   (I)   HeuristicPlus JSON pruning
   plan_solve/                (II)  Plan-and-Solve code generation
   self_correction/           (III) Self-correction debug loop
+baseline/                    Self-contained copy of the paper baseline
+  run_baseline.py            Run one (setup, model) baseline pair
+  run_evaluation.py          Score the baseline predictions
+  README.md                  Beginner-friendly walkthrough
+  codegen_scripts/           Prompt templates + code executor
+  experimental_scripts/      Original qa_inference / qa_evaluation
+  generate_qa_pairs/tasks/   Per-endpoint gold-answer logic
+docs/
+  setup.html                 Full step-by-step setup guide as HTML docs
+data/toolJSONprocessing/     Upstream package (Kate et al., 2025)
+  generate_qa_pairs/data/    QA pairs, API responses, schemas
 ```
 
-## 5. Installation
+## 5. Quick start (for a first-time user)
+
+> If you've never touched an LLM benchmark before, follow
+> [`docs/setup.html`](docs/setup.html) — it walks you through everything from
+> installing Python to reading the results table. The summary below assumes
+> you're already comfortable with Python and HTTP APIs.
 
 ```bash
 git clone <repo-url>
-cd LLM-BMtools
+cd CS222_final
+python -m venv .venv
+# Windows
+.venv\Scripts\Activate.ps1
+# Linux / macOS
+# source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
@@ -97,7 +121,7 @@ Requires Python 3.10+.
 
 ## 6. Configuration
 
-Each model is an OpenAI-compatible endpoint (vLLM, Modal, OpenAI, ...).
+Each model is an OpenAI-compatible endpoint (vLLM, Modal, OpenAI, Azure …).
 
 ```bash
 cp config.example.yaml config.yaml
@@ -124,9 +148,31 @@ Place the ToolJSON benchmark under `data/` (git-ignored):
 data/toolJSONprocessing/generate_qa_pairs/data/
   qa_pairs/        # one JSON file of QA pairs per endpoint
   api_responses/   # the raw API JSON responses
+  schemas/         # JSON schemas per endpoint
 ```
 
 ## 8. Usage
+
+### A — Re-run the paper baseline (`baseline/`)
+
+```bash
+cd baseline
+cp example.env .env       # fill in LLM_PROVIDER / AZURE_* or use Ollama
+pip install -r requirements.txt
+
+# Reproduce one column of the baseline table:
+python run_baseline.py --setup answer       --model ibm-granite/granite-3.3-8b-instruct
+python run_baseline.py --setup code_schema  --model openai/gpt-oss-20b
+python run_baseline.py --setup code         --model mistralai/Devstral-Small-2507
+
+# Score (EM + Contains, optionally LLM-as-a-judge):
+python run_evaluation.py
+python run_evaluation.py --judge meta-llama/llama-3-3-70b-instruct
+```
+
+See [`baseline/README.md`](baseline/README.md) for the line-by-line walkthrough.
+
+### B — Run the three enhancement methods (root)
 
 ```bash
 # Baseline — raw JSON, answer directly
@@ -145,7 +191,7 @@ python main.py --method self_correction --model gptoss
 python main.py --method plan_solve --model granite --limit 20 --skip-judge
 ```
 
-### Options
+### Options (main.py)
 
 | Flag | Default | Description |
 |---|---|---|
@@ -168,25 +214,41 @@ Per-sample results (CSV + JSON) and a summary are written to `results/`.
 | **F1** | Token-level F1 between prediction and gold answer. |
 | **LLM-as-a-judge** | A judge model decides semantic equivalence. The most lenient metric. |
 
-## 10. Results
+## 10. Baseline results (re-run of Kate et al., 2025)
 
-Results reported for three models on the full benchmark (2,067 samples).
-ΔEM is the change in EM, in percentage points, versus that model's baseline.
+Reproduced on the full 2,067-sample benchmark using the code under
+[`baseline/`](baseline/). The three columns are the three baseline settings
+the paper compares: direct answer, code-only, code + JSON schema.
+
+| Model | Code (EM / Judge / Contain) | Code + Schema (EM / Judge / Contain) | Answer (EM / Judge / Contain) |
+|---|---|---|---|
+| Granite-3.3-8B | 0.325 / 0.41 / 0.33 | 0.451 / 0.53 / 0.46 | **0.519** / 0.61 / 0.57 |
+| GPT-OSS-20B | 0.615 / 0.76 / 0.62 | **0.723** / 0.85 / 0.74 | 0.260 / 0.44 / 0.59 |
+| Devstral-Small-24B | 0.672 / 0.75 / 0.68 | **0.720** / 0.82 / 0.73 | 0.649 / 0.75 / 0.70 |
+
+For each model, **bold** marks the best EM among the three baseline settings —
+the one we use as the "Baseline" row when comparing against our enhancements
+in §11.
+
+## 11. Enhancement results
+
+ΔEM is the change in EM, in percentage points, versus that model's best
+baseline (the bold cell above).
 
 | Model | Method | EM | Contains | Judge | ΔEM |
 |---|---|---:|---:|---:|---:|
-| Granite-3.3-8B | Baseline (Answer) | 0.519 | — | 0.60 | — |
-| | JSON Pruning | 0.609 | 0.658 | 0.755 | +9.0 |
-| | + Plan-and-Solve | **0.687** | **0.720** | 0.732 | +16.8 |
+| Granite-3.3-8B | **Baseline (Answer)** | 0.519 | 0.570 | 0.607 | — |
+| | HeuristicPlus pruning | 0.609 | 0.658 | **0.755** | +9.0 |
+| | + Plan-and-Solve | **0.687** | **0.720** | 0.732 | **+16.8** |
 | | Self-Correction | 0.612 | 0.644 | 0.677 | +9.3 |
-| GPT-OSS-20B | Baseline (Code+Schema) | 0.723 | — | 0.76 | — |
-| | JSON Pruning | 0.672 | 0.683 | 0.773 | −5.1 |
+| GPT-OSS-20B | **Baseline (Code + Schema)** | 0.723 | 0.735 | 0.760 | — |
+| | HeuristicPlus pruning | 0.672 | 0.683 | 0.773 | −5.1 |
 | | + Plan-and-Solve | 0.680 | 0.689 | 0.695 | −4.3 |
-| | Self-Correction | **0.771** | **0.790** | **0.824** | +4.8 |
-| Devstral-Small-24B | Baseline (Code+Schema) | 0.720 | — | 0.77 | — |
-| | JSON Pruning | 0.717 | 0.731 | **0.826** | −0.4 |
+| | Self-Correction | **0.771** | **0.790** | **0.824** | **+4.8** |
+| Devstral-Small-24B | **Baseline (Code + Schema)** | 0.720 | 0.732 | 0.773 | — |
+| | HeuristicPlus pruning | 0.717 | 0.731 | **0.826** | −0.3 |
 | | + Plan-and-Solve | 0.715 | 0.714 | 0.749 | −0.5 |
-| | Self-Correction | **0.742** | **0.754** | 0.757 | +2.2 |
+| | Self-Correction | **0.742** | **0.754** | 0.757 | **+2.2** |
 
 **Takeaways.** Plan-and-Solve gives the largest gain to the weakest model
 (Granite, +16.8 pp EM) by adding an explicit algorithm-design step before
@@ -195,7 +257,7 @@ improvement for code-trained models (GPT-OSS, Devstral), recovering nearly all
 execution errors. For models that already generate strong code, the extra
 planning step adds more noise than benefit.
 
-## 11. Authors
+## 12. Authors
 
 - Nguyễn Minh Triết
 - Nguyễn Minh Bảo

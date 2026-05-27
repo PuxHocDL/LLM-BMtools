@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  python-syntax:
+    name: Syntax-check Python sources
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Compile all .py files
+        run: |
+          python -m compileall -q baseline core data_loaders evaluators extensions main.py
+
+  docs-validate:
+    name: Validate docs HTML
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Sanity-check docs files
+        run: |
+          test -f docs/index.html
+          test -f docs/setup.html
+          echo "OK: docs/index.html and docs/setup.html present"
+
+      - name: HTML lint (tidy, warnings only)
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y tidy
+          # tidy returns 1 on warnings; we only fail on hard errors (exit 2)
+          tidy -q -e docs/setup.html || [ $? -lt 2 ]
+          tidy -q -e docs/index.html || [ $? -lt 2 ]

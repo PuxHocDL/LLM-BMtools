@@ -33,5 +33,6 @@ desktop.ini
 # Env
 .env
 *.env
+!baseline/example.env
 venv/
 .venv/
