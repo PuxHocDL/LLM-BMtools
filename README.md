@@ -113,7 +113,7 @@ data/toolJSONprocessing/     Upstream package (Kate et al., 2025)
 
 ```bash
 git clone <repo-url>
-cd CS222_final
+cd LLM-BMtools
 python -m venv .venv
 # Windows
 .venv\Scripts\Activate.ps1
