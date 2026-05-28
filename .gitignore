@@ -10,9 +10,6 @@ build/
 # Config chứa API keys — KHÔNG push lên git
 config.yaml
 
-# Data lớn — mỗi người tự tải theo README
-data/
-
 # Results — mỗi người tự chạy tự có
 results/
 

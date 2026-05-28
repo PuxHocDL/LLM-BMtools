@@ -1,0 +1,2008 @@
+
+    {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Response schema for get room list with availability endpoint.",
+    "type": "object",
+    "properties": {
+        "status": {
+        "type": "boolean"
+        },
+        "available": {
+        "type": "array",
+        "items": {
+            "type": "object",
+            "properties": {
+            "name_without_policy": {
+                "type": "string"
+            },
+            "nr_children": {
+                "type": "number"
+            },
+            "max_children_free_age": {
+                "type": "number"
+            },
+            "package_id": {
+                "type": "number"
+            },
+            "full_board": {
+                "type": "number"
+            },
+            "deals": {
+                "type": "object",
+                "properties": {
+                "deal_attributes": {
+                    "type": "object",
+                    "properties": {
+                    "has_secret_channel_option": {
+                        "type": "number"
+                    }
+                    },
+                    "required": [
+                    "has_secret_channel_option"
+                    ]
+                }
+                },
+                "required": [
+                "deal_attributes"
+                ]
+            },
+            "name": {
+                "type": "string"
+            },
+            "room_count": {
+                "type": "number"
+            },
+            "transactional_policy_data": {
+                "type": "object",
+                "properties": {
+                "booking_conditions": {
+                    "type": "array",
+                    "items": {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                        "type": "string"
+                        },
+                        "description": {
+                        "type": "string"
+                        },
+                        "policy_type_key": {
+                        "type": "string"
+                        },
+                        "key": {
+                        "type": "string"
+                        },
+                        "text": {
+                        "type": "string"
+                        },
+                        "icon": {
+                        "type": "string"
+                        },
+                        "parameters": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                            "key": {
+                                "type": "string"
+                            },
+                            "value": {
+                                "type": "string"
+                            },
+                            "format": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            }
+                            },
+                            "required": [
+                            "key",
+                            "value",
+                            "type"
+                            ]
+                        }
+                        },
+                        "footer": {
+                        "type": "string"
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "description",
+                        "policy_type_key",
+                        "key",
+                        "text",
+                        "icon"
+                    ]
+                    }
+                },
+                "policies": {
+                    "type": "array",
+                    "items": {
+                    "type": "object",
+                    "properties": {
+                        "description": {
+                        "type": "string"
+                        },
+                        "policy_type_key": {
+                        "type": "string"
+                        },
+                        "text": {
+                        "type": "string"
+                        },
+                        "key": {
+                        "type": "string"
+                        },
+                        "parameters": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                            "type": {
+                                "type": "string"
+                            },
+                            "format": {
+                                "type": "string"
+                            },
+                            "value": {
+                                "type": "string"
+                            },
+                            "key": {
+                                "type": "string"
+                            }
+                            },
+                            "required": [
+                            "type",
+                            "value",
+                            "key"
+                            ]
+                        }
+                        },
+                        "icon": {
+                        "type": "string"
+                        },
+                        "footer": {
+                        "type": "string"
+                        },
+                        "type": {
+                        "type": "string"
+                        }
+                    },
+                    "required": [
+                        "description",
+                        "policy_type_key",
+                        "text",
+                        "key",
+                        "icon",
+                        "type"
+                    ]
+                    }
+                }
+                },
+                "required": [
+                "booking_conditions",
+                "policies"
+                ]
+            },
+            "policy_display_details": {
+                "type": "object",
+                "properties": {
+                "prepayment": {
+                    "type": "object",
+                    "properties": {
+                    "description_details": {
+                        "type": "object",
+                        "properties": {
+                        "placeholder_translation": {
+                            "type": "string"
+                        },
+                        "translation": {
+                            "type": "string"
+                        }
+                        },
+                        "required": [
+                        "placeholder_translation",
+                        "translation"
+                        ]
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "title_details": {
+                        "type": "object",
+                        "properties": {
+                        "has_html": {
+                            "type": "number"
+                        },
+                        "placeholder_translation": {
+                            "type": "string"
+                        },
+                        "translation": {
+                            "type": "string"
+                        },
+                        "tag": {
+                            "type": "string"
+                        }
+                        },
+                        "required": [
+                        "has_html",
+                        "placeholder_translation",
+                        "translation",
+                        "tag"
+                        ]
+                    },
+                    "policy_type_key": {
+                        "type": "string"
+                    }
+                    },
+                    "required": [
+                    "description_details",
+                    "type",
+                    "title_details",
+                    "policy_type_key"
+                    ]
+                },
+                "cancellation": {
+                    "type": "object",
+                    "properties": {
+                    "clarification_details": {
+                        "type": "object",
+                        "properties": {
+                        "tag": {
+                            "type": "string"
+                        },
+                        "translation": {
+                            "type": "string"
+                        },
+                        "placeholder_translation": {
+                            "type": "string"
+                        },
+                        "parameters": {
+                            "type": "object",
+                            "properties": {
+                            "date": {
+                                "type": "string"
+                            },
+                            "timezone": {
+                                "type": "string"
+                            }
+                            },
+                            "required": [
+                            "date",
+                            "timezone"
+                            ]
+                        }
+                        },
+                        "required": [
+                        "tag",
+                        "translation",
+                        "placeholder_translation",
+                        "parameters"
+                        ]
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "policy_type_key": {
+                        "type": "string"
+                    },
+                    "description_details": {
+                        "type": "object",
+                        "properties": {
+                        "placeholder_translation": {
+                            "type": "string"
+                        },
+                        "translation": {
+                            "type": "string"
+                        }
+                        },
+                        "required": [
+                        "placeholder_translation",
+                        "translation"
+                        ]
+                    },
+                    "title_details": {
+                        "type": "object",
+                        "properties": {
+                        "parameters": {
+                            "type": "object",
+                            "properties": {
+                            "date": {
+                                "type": "string"
+                            },
+                            "timezone": {
+                                "type": "string"
+                            },
+                            "free_cancellation_deadline": {
+                                "type": "string"
+                            }
+                            },
+                            "required": [
+                            "date",
+                            "timezone",
+                            "free_cancellation_deadline"
+                            ]
+                        },
+                        "placeholder_translation": {
+                            "type": "string"
+                        },
+                        "has_html": {
+                            "type": "number"
+                        },
+                        "tag": {
+                            "type": "string"
+                        },
+                        "translation": {
+                            "type": "string"
+                        }
+                        },
+                        "required": [
+                        "parameters",
+                        "placeholder_translation",
+                        "has_html",
+                        "tag",
+                        "translation"
+                        ]
+                    },
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                        "has_cancellation_fee": {
+                            "type": "number"
+                        }
+                        },
+                        "required": [
+                        "has_cancellation_fee"
+                        ]
+                    }
+                    },
+                    "required": [
+                    "clarification_details",
+                    "type",
+                    "policy_type_key",
+                    "description_details",
+                    "title_details",
+                    "parameters"
+                    ]
+                }
+                },
+                "required": [
+                "prepayment",
+                "cancellation"
+                ]
+            },
+            "pod_ios_migrate_policies_to_smp_fullon": {
+                "type": "number"
+            },
+            "genius_discount_percentage": {
+                "type": "number"
+            },
+            "must_reserve_free_parking": {
+                "type": "number"
+            },
+            "is_mobile_deal": {
+                "type": "number"
+            },
+            "pre_auth_bo_nocc": {
+                "type": "number"
+            },
+            "transactional_policy_objects": {
+                "type": "array",
+                "items": {
+                "type": "object",
+                "properties": {
+                    "parameters": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                        "key": {
+                            "type": "string"
+                        },
+                        "value": {
+                            "type": "string"
+                        },
+                        "format": {
+                            "type": "string"
+                        },
+                        "type": {
+                            "type": "string"
+                        }
+                        },
+                        "required": [
+                        "key",
+                        "value",
+                        "type"
+                        ]
+                    }
+                    },
+                    "icon": {
+                    "type": "string"
+                    },
+                    "key": {
+                    "type": "string"
+                    },
+                    "text": {
+                    "type": "string"
+                    }
+                },
+                "required": [
+                    "icon",
+                    "key",
+                    "text"
+                ]
+                }
+            },
+            "number_of_bathrooms": {
+                "type": "number"
+            },
+            "product_price_breakdown": {
+                "type": "object",
+                "properties": {
+                "price_display_config": {
+                    "type": "array",
+                    "items": {
+                    "type": "object",
+                    "properties": {
+                        "value": {
+                        "type": "number"
+                        },
+                        "key": {
+                        "type": "string"
+                        }
+                    },
+                    "required": [
+                        "value",
+                        "key"
+                    ]
+                    }
+                },
+                "net_amount": {
+                    "type": "object",
+                    "properties": {
+                    "amount_rounded": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "number"
+                    },
+                    "currency": {
+                        "type": "string"
+                    },
+                    "amount_unrounded": {
+                        "type": "string"
+                    }
+                    },
+                    "required": [
+                    "amount_rounded",
+                    "value",
+                    "currency",
+                    "amount_unrounded"
+                    ]
+                },
+                "has_long_stays_monthly_rate_price": {
+                    "type": "number"
+                },
+                "excluded_amount": {
+                    "type": "object",
+                    "properties": {
+                    "currency": {
+                        "type": "string"
+                    },
+                    "amount_unrounded": {
+                        "type": "string"
+                    },
+                    "amount_rounded": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "number"
+                    }
+                    },
+                    "required": [
+                    "currency",
+                    "amount_unrounded",
+                    "amount_rounded",
+                    "value"
+                    ]
+                },
+                "strikethrough_amount": {
+                    "type": "object",
+                    "properties": {
+                    "currency": {
+                        "type": "string"
+                    },
+                    "amount_unrounded": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "number"
+                    },
+                    "amount_rounded": {
+                        "type": "string"
+                    }
+                    },
+                    "required": [
+                    "currency",
+                    "amount_unrounded",
+                    "value",
+                    "amount_rounded"
+                    ]
+                },
+                "gross_amount_per_night": {
+                    "type": "object",
+                    "properties": {
+                    "amount_rounded": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "number"
+                    },
+                    "currency": {
+                        "type": "string"
+                    },
+                    "amount_unrounded": {
+                        "type": "string"
+                    }
+                    },
+                    "required": [
+                    "amount_rounded",
+                    "value",
+                    "currency",
+                    "amount_unrounded"
+                    ]
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                    "type": "object",
+                    "properties": {
+                        "kind": {
+                        "type": "string"
+                        },
+                        "name": {
+                        "type": "string"
+                        },
+                        "inclusion_type": {
+                        "type": "string"
+                        },
+                        "item_amount": {
+                        "type": "object",
+                        "properties": {
+                            "currency": {
+                            "type": "string"
+                            },
+                            "amount_unrounded": {
+                            "type": "string"
+                            },
+                            "amount_rounded": {
+                            "type": "string"
+                            },
+                            "value": {
+                            "type": "number"
+                            }
+                        },
+                        "required": [
+                            "currency",
+                            "amount_unrounded",
+                            "amount_rounded",
+                            "value"
+                        ]
+                        },
+                        "details": {
+                        "type": "string"
+                        },
+                        "base": {
+                        "type": "object",
+                        "properties": {
+                            "kind": {
+                            "type": "string"
+                            },
+                            "percentage": {
+                            "type": "number"
+                            }
+                        },
+                        "required": [
+                            "kind"
+                        ]
+                        },
+                        "identifier": {
+                        "type": "string"
+                        }
+                    },
+                    "required": [
+                        "kind",
+                        "name",
+                        "item_amount",
+                        "details",
+                        "base"
+                    ]
+                    }
+                },
+                "strikethrough_amount_per_night": {
+                    "type": "object",
+                    "properties": {
+                    "value": {
+                        "type": "number"
+                    },
+                    "amount_rounded": {
+                        "type": "string"
+                    },
+                    "currency": {
+                        "type": "string"
+                    },
+                    "amount_unrounded": {
+                        "type": "string"
+                    }
+                    },
+                    "required": [
+                    "value",
+                    "amount_rounded",
+                    "currency",
+                    "amount_unrounded"
+                    ]
+                },
+                "gross_amount_hotel_currency": {
+                    "type": "object",
+                    "properties": {
+                    "amount_unrounded": {
+                        "type": "string"
+                    },
+                    "currency": {
+                        "type": "string"
+                    },
+                    "amount_rounded": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "number"
+                    }
+                    },
+                    "required": [
+                    "amount_unrounded",
+                    "currency",
+                    "amount_rounded",
+                    "value"
+                    ]
+                },
+                "included_taxes_and_charges_amount": {
+                    "type": "object",
+                    "properties": {
+                    "amount_rounded": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "number"
+                    },
+                    "amount_unrounded": {
+                        "type": "string"
+                    },
+                    "currency": {
+                        "type": "string"
+                    }
+                    },
+                    "required": [
+                    "amount_rounded",
+                    "value",
+                    "amount_unrounded",
+                    "currency"
+                    ]
+                },
+                "charges_details": {
+                    "type": "object",
+                    "properties": {
+                    "amount": {
+                        "type": "object",
+                        "properties": {
+                        "value": {
+                            "type": "number"
+                        },
+                        "currency": {
+                            "type": "string"
+                        }
+                        },
+                        "required": [
+                        "value",
+                        "currency"
+                        ]
+                    },
+                    "mode": {
+                        "type": "string"
+                    }
+                    },
+                    "required": [
+                    "amount",
+                    "mode"
+                    ]
+                },
+                "client_translations": {
+                    "type": "object",
+                    "properties": {
+                    "tooltip_total_text": {
+                        "type": "string"
+                    }
+                    },
+                    "required": [
+                    "tooltip_total_text"
+                    ]
+                },
+                "all_inclusive_amount": {
+                    "type": "object",
+                    "properties": {
+                    "value": {
+                        "type": "number"
+                    },
+                    "amount_rounded": {
+                        "type": "string"
+                    },
+                    "amount_unrounded": {
+                        "type": "string"
+                    },
+                    "currency": {
+                        "type": "string"
+                    }
+                    },
+                    "required": [
+                    "value",
+                    "amount_rounded",
+                    "amount_unrounded",
+                    "currency"
+                    ]
+                },
+                "has_long_stays_weekly_rate_price": {
+                    "type": "number"
+                },
+                "benefits": {
+                    "type": "array",
+                    "items": {
+                    "type": "object",
+                    "properties": {
+                        "badge_variant": {
+                        "type": "string"
+                        },
+                        "identifier": {
+                        "type": "string"
+                        },
+                        "details": {
+                        "type": "string"
+                        },
+                        "kind": {
+                        "type": "string"
+                        },
+                        "name": {
+                        "type": "string"
+                        }
+                    },
+                    "required": [
+                        "badge_variant",
+                        "identifier",
+                        "details",
+                        "kind",
+                        "name"
+                    ]
+                    }
+                },
+                "gross_amount": {
+                    "type": "object",
+                    "properties": {
+                    "currency": {
+                        "type": "string"
+                    },
+                    "amount_unrounded": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "number"
+                    },
+                    "amount_rounded": {
+                        "type": "string"
+                    }
+                    },
+                    "required": [
+                    "currency",
+                    "amount_unrounded",
+                    "value",
+                    "amount_rounded"
+                    ]
+                },
+                "discounted_amount": {
+                    "type": "object",
+                    "properties": {
+                    "value": {
+                        "type": "number"
+                    },
+                    "amount_rounded": {
+                        "type": "string"
+                    },
+                    "amount_unrounded": {
+                        "type": "string"
+                    },
+                    "currency": {
+                        "type": "string"
+                    }
+                    },
+                    "required": [
+                    "value",
+                    "amount_rounded",
+                    "amount_unrounded",
+                    "currency"
+                    ]
+                },
+                "nr_stays": {
+                    "type": "number"
+                },
+                "all_inclusive_amount_hotel_currency": {
+                    "type": "object",
+                    "properties": {
+                    "amount_rounded": {
+                        "type": "string"
+                    },
+                    "value": {
+                        "type": "number"
+                    },
+                    "currency": {
+                        "type": "string"
+                    },
+                    "amount_unrounded": {
+                        "type": "string"
+                    }
+                    },
+                    "required": [
+                    "amount_rounded",
+                    "value",
+                    "currency",
+                    "amount_unrounded"
+                    ]
+                }
+                },
+                "required": [
+                "price_display_config",
+                "net_amount",
+                "has_long_stays_monthly_rate_price",
+                "excluded_amount",
+                "gross_amount_per_night",
+                "items",
+                "gross_amount_hotel_currency",
+                "included_taxes_and_charges_amount",
+                "charges_details",
+                "client_translations",
+                "all_inclusive_amount",
+                "has_long_stays_weekly_rate_price",
+                "gross_amount",
+                "nr_stays",
+                "all_inclusive_amount_hotel_currency"
+                ]
+            },
+            "is_dormitory": {
+                "type": "number"
+            },
+            "paymentterms": {
+                "type": "object",
+                "properties": {
+                "cancellation": {
+                    "type": "object",
+                    "properties": {
+                    "timeline": {
+                        "type": "object",
+                        "properties": {
+                        "nr_stages": {
+                            "type": "number"
+                        },
+                        "stages": {
+                            "type": "array",
+                            "items": {
+                            "type": "object",
+                            "properties": {
+                                "u_stage_fee_pretty": {
+                                "type": "string"
+                                },
+                                "fee_remaining_pretty": {
+                                "type": "string"
+                                },
+                                "limit_timezone": {
+                                "type": "string"
+                                },
+                                "u_fee_remaining_pretty": {
+                                "type": "string"
+                                },
+                                "u_fee": {
+                                "type": "string"
+                                },
+                                "limit_from_raw": {
+                                "type": "string"
+                                },
+                                "current_stage": {
+                                "type": "number"
+                                },
+                                "is_effective": {
+                                "type": "number"
+                                },
+                                "u_fee_pretty": {
+                                "type": "string"
+                                },
+                                "is_free": {
+                                "type": "number"
+                                },
+                                "stage_fee_pretty": {
+                                "type": "string"
+                                },
+                                "date_until": {
+                                "type": "string"
+                                },
+                                "limit_from": {
+                                "type": "string"
+                                },
+                                "stage_translation": {
+                                "type": "string"
+                                },
+                                "limit_until_date": {
+                                "type": "string"
+                                },
+                                "stage_fee": {
+                                "type": "number"
+                                },
+                                "fee": {
+                                "type": "number"
+                                },
+                                "u_fee_remaining": {
+                                "type": "string"
+                                },
+                                "fee_pretty": {
+                                "type": "string"
+                                },
+                                "u_stage_fee": {
+                                "type": "string"
+                                },
+                                "limit_from_time": {
+                                "type": "string"
+                                },
+                                "limit_until_time": {
+                                "type": "string"
+                                },
+                                "limit_until": {
+                                "type": "string"
+                                },
+                                "limit_from_date": {
+                                "type": "string"
+                                },
+                                "effective_number": {
+                                "type": "number"
+                                },
+                                "text_refundable": {
+                                "type": "string"
+                                },
+                                "fee_rounded": {
+                                "type": "number"
+                                },
+                                "b_number": {
+                                "type": "number"
+                                },
+                                "limit_until_raw": {
+                                "type": "string"
+                                },
+                                "b_state": {
+                                "type": "string"
+                                },
+                                "text": {
+                                "type": "string"
+                                },
+                                "fee_remaining": {
+                                "type": "number"
+                                },
+                                "amount": {},
+                                "amount_pretty": {
+                                "type": "string"
+                                },
+                                "date_from": {
+                                "type": "string"
+                                }
+                            },
+                            "required": [
+                                "u_stage_fee_pretty",
+                                "fee_remaining_pretty",
+                                "limit_timezone",
+                                "u_fee_remaining_pretty",
+                                "u_fee",
+                                "limit_from_raw",
+                                "current_stage",
+                                "is_effective",
+                                "u_fee_pretty",
+                                "is_free",
+                                "stage_fee_pretty",
+                                "limit_from",
+                                "stage_translation",
+                                "limit_until_date",
+                                "stage_fee",
+                                "fee",
+                                "u_fee_remaining",
+                                "fee_pretty",
+                                "u_stage_fee",
+                                "limit_from_time",
+                                "limit_until_time",
+                                "limit_until",
+                                "limit_from_date",
+                                "effective_number",
+                                "text_refundable",
+                                "fee_rounded",
+                                "b_number",
+                                "limit_until_raw",
+                                "b_state",
+                                "text",
+                                "fee_remaining",
+                                "amount"
+                            ]
+                            }
+                        },
+                        "u_currency_code": {
+                            "type": "string"
+                        },
+                        "currency_code": {
+                            "type": "string"
+                        },
+                        "policygroup_instance_id": {
+                            "type": "string"
+                        }
+                        },
+                        "required": [
+                        "nr_stages",
+                        "stages",
+                        "u_currency_code",
+                        "currency_code",
+                        "policygroup_instance_id"
+                        ]
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "info": {
+                        "type": "object",
+                        "properties": {
+                        "time": {
+                            "type": "string"
+                        },
+                        "refundable_date_midnight": {
+                            "type": "string"
+                        },
+                        "refundable": {
+                            "type": "number"
+                        },
+                        "date": {
+                            "type": "string"
+                        },
+                        "timezone_offset": {
+                            "type": "string"
+                        },
+                        "date_raw": {
+                            "type": "string"
+                        },
+                        "date_before": {
+                            "type": "string"
+                        },
+                        "is_midnight": {
+                            "type": "number"
+                        },
+                        "date_before_raw": {
+                            "type": "string"
+                        },
+                        "time_before_midnight": {
+                            "type": "string"
+                        },
+                        "refundable_date": {
+                            "type": "string"
+                        },
+                        "timezone": {
+                            "type": "string"
+                        }
+                        },
+                        "required": [
+                        "time",
+                        "refundable_date_midnight",
+                        "refundable",
+                        "date",
+                        "timezone_offset",
+                        "date_raw",
+                        "date_before",
+                        "is_midnight",
+                        "date_before_raw",
+                        "time_before_midnight",
+                        "refundable_date",
+                        "timezone"
+                        ]
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "type_translation": {
+                        "type": "string"
+                    },
+                    "non_refundable_anymore": {
+                        "type": "number"
+                    },
+                    "guaranteed_non_refundable": {
+                        "type": "number"
+                    },
+                    "bucket": {
+                        "type": "string"
+                    }
+                    },
+                    "required": [
+                    "timeline",
+                    "type",
+                    "info",
+                    "description",
+                    "type_translation",
+                    "non_refundable_anymore",
+                    "guaranteed_non_refundable",
+                    "bucket"
+                    ]
+                },
+                "prepayment": {
+                    "type": "object",
+                    "properties": {
+                    "type_translation": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "info": {
+                        "type": "object",
+                        "properties": {
+                        "refundable": {
+                            "type": "string"
+                        },
+                        "prepayment_at_booktime": {
+                            "type": "number"
+                        }
+                        },
+                        "required": [
+                        "refundable",
+                        "prepayment_at_booktime"
+                        ]
+                    },
+                    "simple_translation": {
+                        "type": "string"
+                    },
+                    "type_extended": {
+                        "type": "string"
+                    },
+                    "timeline": {
+                        "type": "object",
+                        "properties": {
+                        "nr_stages": {
+                            "type": "number"
+                        },
+                        "policygroup_instance_id": {
+                            "type": "string"
+                        },
+                        "currency_code": {
+                            "type": "string"
+                        },
+                        "u_currency_code": {
+                            "type": "string"
+                        },
+                        "stages": {
+                            "type": "array",
+                            "items": {
+                            "type": "object",
+                            "properties": {
+                                "fee_remaining_pretty": {
+                                "type": "string"
+                                },
+                                "limit_timezone": {
+                                "type": "string"
+                                },
+                                "u_stage_fee_pretty": {
+                                "type": "string"
+                                },
+                                "u_fee": {
+                                "type": "string"
+                                },
+                                "limit_from_raw": {
+                                "type": "string"
+                                },
+                                "current_stage": {
+                                "type": "number"
+                                },
+                                "is_effective": {
+                                "type": "number"
+                                },
+                                "u_fee_remaining_pretty": {
+                                "type": "string"
+                                },
+                                "limit_from": {
+                                "type": "string"
+                                },
+                                "amount_pretty": {
+                                "type": "string"
+                                },
+                                "u_fee_pretty": {
+                                "type": "string"
+                                },
+                                "is_free": {
+                                "type": "number"
+                                },
+                                "stage_fee_pretty": {
+                                "type": "string"
+                                },
+                                "stage_fee": {
+                                "type": "number"
+                                },
+                                "amount": {
+                                "type": "string"
+                                },
+                                "fee": {
+                                "type": "number"
+                                },
+                                "limit_until_date": {
+                                "type": "string"
+                                },
+                                "limit_from_time": {
+                                "type": "string"
+                                },
+                                "limit_until": {
+                                "type": "string"
+                                },
+                                "limit_until_time": {
+                                "type": "string"
+                                },
+                                "limit_from_date": {
+                                "type": "string"
+                                },
+                                "u_fee_remaining": {
+                                "type": "string"
+                                },
+                                "fee_pretty": {
+                                "type": "string"
+                                },
+                                "u_stage_fee": {
+                                "type": "string"
+                                },
+                                "fee_rounded": {
+                                "type": "number"
+                                },
+                                "b_number": {
+                                "type": "number"
+                                },
+                                "effective_number": {
+                                "type": "number"
+                                },
+                                "b_state": {
+                                "type": "string"
+                                },
+                                "text": {
+                                "type": "string"
+                                },
+                                "fee_remaining": {
+                                "type": "number"
+                                },
+                                "limit_until_raw": {
+                                "type": "string"
+                                },
+                                "after_checkin": {
+                                "type": "number"
+                                }
+                            },
+                            "required": [
+                                "amount_pretty",
+                                "is_free",
+                                "amount",
+                                "text"
+                            ]
+                            }
+                        }
+                        },
+                        "required": [
+                        "nr_stages",
+                        "policygroup_instance_id",
+                        "currency_code",
+                        "u_currency_code",
+                        "stages"
+                        ]
+                    },
+                    "extended_type_translation": {
+                        "type": "string"
+                    },
+                    "type": {
+                        "type": "string"
+                    }
+                    },
+                    "required": [
+                    "type_translation",
+                    "description",
+                    "info",
+                    "simple_translation",
+                    "type_extended",
+                    "timeline",
+                    "extended_type_translation",
+                    "type"
+                    ]
+                }
+                },
+                "required": [
+                "cancellation",
+                "prepayment"
+                ]
+            },
+            "is_last_minute_deal": {
+                "type": "number"
+            },
+            "room_name": {
+                "type": "string"
+            },
+            "is_block_fit": {
+                "type": "number"
+            },
+            "extrabed_available": {
+                "type": "number"
+            },
+            "room_surface_in_feet2": {
+                "type": "number"
+            },
+            "babycots_available": {
+                "type": "number"
+            },
+            "room_id": {
+                "type": "number"
+            },
+            "is_temp_charge_enabled": {
+                "type": "number"
+            },
+            "can_reserve_free_parking": {
+                "type": "number"
+            },
+            "deposit_required": {
+                "type": "number"
+            },
+            "roomtype_id": {
+                "type": "number"
+            },
+            "all_inclusive": {
+                "type": "number"
+            },
+            "is_domestic_rate": {
+                "type": "number"
+            },
+            "is_secret_deal": {
+                "type": "number"
+            },
+            "is_flash_deal": {
+                "type": "number"
+            },
+            "mealplan": {
+                "type": "string"
+            },
+            "nr_adults": {
+                "type": "number"
+            },
+            "room_surface_in_m2": {
+                "type": "number"
+            },
+            "block_text": {
+                "type": "object",
+                "properties": {
+                "policies": {
+                    "type": "array",
+                    "items": {
+                    "type": "object",
+                    "properties": {
+                        "content": {
+                        "type": "string"
+                        },
+                        "class": {
+                        "type": "string"
+                        },
+                        "mealplan_vector": {
+                        "type": "string"
+                        }
+                    },
+                    "required": [
+                        "content",
+                        "class"
+                    ]
+                    }
+                }
+                },
+                "required": [
+                "policies"
+                ]
+            },
+            "max_children_free": {
+                "type": "number"
+            },
+            "smoking": {
+                "type": "number"
+            },
+            "is_smart_deal": {
+                "type": "number"
+            },
+            "number_of_bedrooms": {
+                "type": "number"
+            },
+            "half_board": {
+                "type": "number"
+            },
+            "refundable": {
+                "type": "number"
+            },
+            "refundable_until": {
+                "type": "string"
+            },
+            "breakfast_included": {
+                "type": "number"
+            },
+            "max_occupancy": {
+                "type": "number"
+            },
+            "block_id": {
+                "type": "string"
+            }
+            },
+            "required": [
+            "name_without_policy",
+            "nr_children",
+            "max_children_free_age",
+            "package_id",
+            "full_board",
+            "deals",
+            "name",
+            "room_count",
+            "transactional_policy_data",
+            "policy_display_details",
+            "pod_ios_migrate_policies_to_smp_fullon",
+            "genius_discount_percentage",
+            "must_reserve_free_parking",
+            "is_mobile_deal",
+            "pre_auth_bo_nocc",
+            "transactional_policy_objects",
+            "number_of_bathrooms",
+            "product_price_breakdown",
+            "is_dormitory",
+            "paymentterms",
+            "is_last_minute_deal",
+            "room_name",
+            "is_block_fit",
+            "extrabed_available",
+            "room_surface_in_feet2",
+            "babycots_available",
+            "room_id",
+            "is_temp_charge_enabled",
+            "can_reserve_free_parking",
+            "deposit_required",
+            "roomtype_id",
+            "all_inclusive",
+            "is_domestic_rate",
+            "is_secret_deal",
+            "is_flash_deal",
+            "mealplan",
+            "nr_adults",
+            "room_surface_in_m2",
+            "block_text",
+            "max_children_free",
+            "smoking",
+            "is_smart_deal",
+            "number_of_bedrooms",
+            "half_board",
+            "refundable",
+            "refundable_until",
+            "breakfast_included",
+            "max_occupancy",
+            "block_id"
+            ]
+        }
+        },
+        "unavailable": {
+        "type": "array",
+        "items": {
+            "type": "object",
+            "properties": {
+            "block_id": {
+                "type": "string"
+            },
+            "number_of_bedrooms": {
+                "type": "number"
+            },
+            "smoking": {
+                "type": "number"
+            },
+            "package_id": {
+                "type": "number"
+            },
+            "is_temp_charge_enabled": {
+                "type": "number"
+            },
+            "name_without_policy": {
+                "type": "string"
+            },
+            "room_surface_in_feet2": {
+                "type": "number"
+            },
+            "refundable": {
+                "type": "number"
+            },
+            "nr_children": {
+                "type": "number"
+            },
+            "transactional_policy_data": {
+                "type": "object",
+                "properties": {
+                "policies": {
+                    "type": "array",
+                    "items": {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                        "type": "string"
+                        },
+                        "text": {
+                        "type": "string"
+                        },
+                        "description": {
+                        "type": "string"
+                        },
+                        "icon": {
+                        "type": "string"
+                        },
+                        "policy_type_key": {
+                        "type": "string"
+                        },
+                        "parameters": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                            "value": {
+                                "type": "string"
+                            },
+                            "key": {
+                                "type": "string"
+                            },
+                            "format": {
+                                "type": "string"
+                            },
+                            "type": {
+                                "type": "string"
+                            }
+                            },
+                            "required": [
+                            "value",
+                            "key",
+                            "type"
+                            ]
+                        }
+                        },
+                        "key": {
+                        "type": "string"
+                        },
+                        "footer": {
+                        "type": "string"
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "text",
+                        "description",
+                        "icon",
+                        "policy_type_key",
+                        "key"
+                    ]
+                    }
+                },
+                "booking_conditions": {
+                    "type": "array",
+                    "items": {
+                    "type": "object",
+                    "properties": {
+                        "icon": {
+                        "type": "string"
+                        },
+                        "type": {
+                        "type": "string"
+                        },
+                        "description": {
+                        "type": "string"
+                        },
+                        "text": {
+                        "type": "string"
+                        },
+                        "key": {
+                        "type": "string"
+                        },
+                        "policy_type_key": {
+                        "type": "string"
+                        },
+                        "parameters": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                            "type": {
+                                "type": "string"
+                            },
+                            "format": {
+                                "type": "string"
+                            },
+                            "value": {
+                                "type": "string"
+                            },
+                            "key": {
+                                "type": "string"
+                            }
+                            },
+                            "required": [
+                            "type",
+                            "value",
+                            "key"
+                            ]
+                        }
+                        },
+                        "footer": {
+                        "type": "string"
+                        }
+                    },
+                    "required": [
+                        "icon",
+                        "type",
+                        "description",
+                        "text",
+                        "key",
+                        "policy_type_key"
+                    ]
+                    }
+                }
+                },
+                "required": [
+                "policies",
+                "booking_conditions"
+                ]
+            },
+            "max_occupancy": {
+                "type": "number"
+            },
+            "nr_adults": {
+                "type": "number"
+            },
+            "is_dormitory": {
+                "type": "number"
+            },
+            "babycots_available": {
+                "type": "number"
+            },
+            "extrabed_available": {
+                "type": "number"
+            },
+            "half_board": {
+                "type": "number"
+            },
+            "is_mobile_deal": {
+                "type": "number"
+            },
+            "room_id": {
+                "type": "number"
+            },
+            "room_surface_in_m2": {
+                "type": "number"
+            },
+            "breakfast_included": {
+                "type": "number"
+            },
+            "full_board": {
+                "type": "number"
+            },
+            "room_name": {
+                "type": "string"
+            },
+            "is_domestic_rate": {
+                "type": "number"
+            },
+            "name": {
+                "type": "string"
+            },
+            "is_flash_deal": {
+                "type": "number"
+            },
+            "deposit_required": {
+                "type": "number"
+            },
+            "policy_display_details": {
+                "type": "object",
+                "properties": {
+                "cancellation": {
+                    "type": "object",
+                    "properties": {
+                    "title_details": {
+                        "type": "object",
+                        "properties": {
+                        "parameters": {
+                            "type": "object",
+                            "properties": {
+                            "date": {
+                                "type": "string"
+                            },
+                            "free_cancellation_deadline": {
+                                "type": "string"
+                            },
+                            "timezone": {
+                                "type": "string"
+                            }
+                            },
+                            "required": [
+                            "date",
+                            "free_cancellation_deadline",
+                            "timezone"
+                            ]
+                        },
+                        "has_html": {
+                            "type": "number"
+                        },
+                        "placeholder_translation": {
+                            "type": "string"
+                        },
+                        "tag": {
+                            "type": "string"
+                        },
+                        "translation": {
+                            "type": "string"
+                        }
+                        },
+                        "required": [
+                        "parameters",
+                        "has_html",
+                        "placeholder_translation",
+                        "tag",
+                        "translation"
+                        ]
+                    },
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                        "has_cancellation_fee": {
+                            "type": "number"
+                        }
+                        },
+                        "required": [
+                        "has_cancellation_fee"
+                        ]
+                    },
+                    "policy_type_key": {
+                        "type": "string"
+                    },
+                    "description_details": {
+                        "type": "object",
+                        "properties": {
+                        "placeholder_translation": {
+                            "type": "string"
+                        },
+                        "translation": {
+                            "type": "string"
+                        }
+                        },
+                        "required": [
+                        "placeholder_translation",
+                        "translation"
+                        ]
+                    },
+                    "clarification_details": {
+                        "type": "object",
+                        "properties": {
+                        "parameters": {
+                            "type": "object",
+                            "properties": {
+                            "timezone": {
+                                "type": "string"
+                            },
+                            "date": {
+                                "type": "string"
+                            }
+                            },
+                            "required": [
+                            "timezone",
+                            "date"
+                            ]
+                        },
+                        "placeholder_translation": {
+                            "type": "string"
+                        },
+                        "tag": {
+                            "type": "string"
+                        },
+                        "translation": {
+                            "type": "string"
+                        }
+                        },
+                        "required": [
+                        "parameters",
+                        "placeholder_translation",
+                        "tag",
+                        "translation"
+                        ]
+                    },
+                    "type": {
+                        "type": "string"
+                    }
+                    },
+                    "required": [
+                    "title_details",
+                    "parameters",
+                    "policy_type_key",
+                    "description_details",
+                    "clarification_details",
+                    "type"
+                    ]
+                },
+                "prepayment": {
+                    "type": "object",
+                    "properties": {
+                    "description_details": {
+                        "type": "object",
+                        "properties": {
+                        "translation": {
+                            "type": "string"
+                        },
+                        "placeholder_translation": {
+                            "type": "string"
+                        }
+                        },
+                        "required": [
+                        "translation",
+                        "placeholder_translation"
+                        ]
+                    },
+                    "type": {
+                        "type": "string"
+                    },
+                    "title_details": {
+                        "type": "object",
+                        "properties": {
+                        "placeholder_translation": {
+                            "type": "string"
+                        },
+                        "tag": {
+                            "type": "string"
+                        },
+                        "has_html": {
+                            "type": "number"
+                        },
+                        "translation": {
+                            "type": "string"
+                        }
+                        },
+                        "required": [
+                        "placeholder_translation",
+                        "tag",
+                        "has_html",
+                        "translation"
+                        ]
+                    },
+                    "policy_type_key": {
+                        "type": "string"
+                    }
+                    },
+                    "required": [
+                    "description_details",
+                    "type",
+                    "title_details",
+                    "policy_type_key"
+                    ]
+                }
+                },
+                "required": [
+                "cancellation",
+                "prepayment"
+                ]
+            },
+            "room_count": {
+                "type": "number"
+            },
+            "max_children_free_age": {
+                "type": "number"
+            },
+            "pre_auth_bo_nocc": {
+                "type": "number"
+            },
+            "can_reserve_free_parking": {
+                "type": "number"
+            },
+            "number_of_bathrooms": {
+                "type": "number"
+            },
+            "max_children_free": {
+                "type": "number"
+            },
+            "roomtype_id": {
+                "type": "number"
+            },
+            "block_text": {
+                "type": "object",
+                "properties": {
+                "policies": {
+                    "type": "array",
+                    "items": {
+                    "type": "object",
+                    "properties": {
+                        "content": {
+                        "type": "string"
+                        },
+                        "class": {
+                        "type": "string"
+                        },
+                        "mealplan_vector": {
+                        "type": "string"
+                        }
+                    },
+                    "required": [
+                        "content",
+                        "class"
+                    ]
+                    }
+                }
+                },
+                "required": [
+                "policies"
+                ]
+            },
+            "must_reserve_free_parking": {
+                "type": "number"
+            },
+            "is_block_fit": {
+                "type": "number"
+            },
+            "all_inclusive": {
+                "type": "number"
+            },
+            "mealplan": {
+                "type": "string"
+            }
+            },
+            "required": [
+            "block_id",
+            "number_of_bedrooms",
+            "smoking",
+            "package_id",
+            "is_temp_charge_enabled",
+            "name_without_policy",
+            "room_surface_in_feet2",
+            "refundable",
+            "nr_children",
+            "transactional_policy_data",
+            "max_occupancy",
+            "nr_adults",
+            "is_dormitory",
+            "babycots_available",
+            "extrabed_available",
+            "half_board",
+            "is_mobile_deal",
+            "room_id",
+            "room_surface_in_m2",
+            "breakfast_included",
+            "full_board",
+            "room_name",
+            "is_domestic_rate",
+            "name",
+            "is_flash_deal",
+            "deposit_required",
+            "policy_display_details",
+            "room_count",
+            "max_children_free_age",
+            "pre_auth_bo_nocc",
+            "can_reserve_free_parking",
+            "number_of_bathrooms",
+            "max_children_free",
+            "roomtype_id",
+            "block_text",
+            "must_reserve_free_parking",
+            "is_block_fit",
+            "all_inclusive",
+            "mealplan"
+            ]
+        }
+        }
+    },
+    "required": [
+        "status",
+        "available",
+        "unavailable"
+    ]
+    }    
+    

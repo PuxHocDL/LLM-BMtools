@@ -1,0 +1,762 @@
+
+    {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Response schema for the search car rentals endpoint.",
+    "type": "object",
+    "properties": {
+        "status": {
+        "type": "boolean"
+        },
+        "message": {
+        "type": "string"
+        },
+        "data": {
+        "type": "object",
+        "properties": {
+            "filter": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                "categories": {
+                    "type": "array",
+                    "items": {
+                    "type": "object",
+                    "properties": {
+                        "count": {
+                        "type": "number"
+                        },
+                        "nameWithCount": {
+                        "type": "string"
+                        },
+                        "name": {
+                        "type": "string"
+                        },
+                        "id": {
+                        "type": "string"
+                        }
+                    },
+                    "required": [
+                        "count",
+                        "nameWithCount",
+                        "name",
+                        "id"
+                    ]
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "layout": {
+                    "type": "object",
+                    "properties": {
+                    "is_collapsed": {
+                        "type": "string"
+                    },
+                    "is_collapsable": {
+                        "type": "string"
+                    },
+                    "layout_type": {
+                        "type": "string"
+                    },
+                    "collapsed_count": {
+                        "type": "number"
+                    }
+                    },
+                    "required": [
+                    "is_collapsed",
+                    "is_collapsable",
+                    "layout_type",
+                    "collapsed_count"
+                    ]
+                }
+                },
+                "required": [
+                "categories",
+                "id",
+                "type",
+                "title",
+                "layout"
+                ]
+            }
+            },
+            "is_genius_location": {
+            "type": "boolean"
+            },
+            "content": {
+            "type": "object",
+            "properties": {
+                "items": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                    "positionInList": {
+                        "type": "number"
+                    },
+                    "content": {
+                        "type": "object",
+                        "properties": {
+                        "contentType": {
+                            "type": "string"
+                        }
+                        },
+                        "required": [
+                        "contentType"
+                        ]
+                    },
+                    "type": {
+                        "type": "string"
+                    }
+                    },
+                    "required": [
+                    "positionInList",
+                    "content",
+                    "type"
+                    ]
+                }
+                },
+                "filters": {
+                "type": "object",
+                "properties": {
+                    "countLabel": {
+                    "type": "string"
+                    }
+                },
+                "required": [
+                    "countLabel"
+                ]
+                }
+            },
+            "required": [
+                "items",
+                "filters"
+            ]
+            },
+            "search_results": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                "vehicle_id": {
+                    "type": "string"
+                },
+                "fee_info": {
+                    "type": "object",
+                    "properties": {
+                    "fee": {
+                        "type": "number"
+                    },
+                    "tax": {
+                        "type": "number"
+                    }
+                    },
+                    "required": [
+                    "fee",
+                    "tax"
+                    ]
+                },
+                "rating_info": {
+                    "type": "object",
+                    "properties": {
+                    "no_of_ratings": {
+                        "type": "number"
+                    },
+                    "dropoff_time": {
+                        "type": "number"
+                    },
+                    "location": {
+                        "type": "number"
+                    },
+                    "pickup_time": {
+                        "type": "number"
+                    },
+                    "value_for_money": {
+                        "type": "number"
+                    },
+                    "cleanliness": {
+                        "type": "number"
+                    },
+                    "efficiency": {
+                        "type": "number"
+                    },
+                    "average_text": {
+                        "type": "string"
+                    },
+                    "condition": {
+                        "type": "number"
+                    },
+                    "average": {
+                        "type": "number"
+                    }
+                    },
+                    "required": [
+                    "no_of_ratings",
+                    "dropoff_time",
+                    "location",
+                    "pickup_time",
+                    "value_for_money",
+                    "cleanliness",
+                    "efficiency",
+                    "condition",
+                    "average"
+                    ]
+                },
+                "vehicle_info": {
+                    "type": "object",
+                    "properties": {
+                    "airbags": {
+                        "type": "number"
+                    },
+                    "seats": {
+                        "type": "string"
+                    },
+                    "aircon": {
+                        "type": "number"
+                    },
+                    "cma_compliant": {
+                        "type": "number"
+                    },
+                    "fuel_type": {
+                        "type": "string"
+                    },
+                    "free_cancellation": {
+                        "type": "number"
+                    },
+                    "special_offer_text": {
+                        "type": "string"
+                    },
+                    "group": {
+                        "type": "string"
+                    },
+                    "suitcases": {
+                        "type": "object",
+                        "properties": {
+                        "big": {
+                            "type": "string"
+                        },
+                        "small": {
+                            "type": "string"
+                        }
+                        },
+                        "required": [
+                        "big",
+                        "small"
+                        ]
+                    },
+                    "mileage": {
+                        "type": "string"
+                    },
+                    "label": {
+                        "type": "string"
+                    },
+                    "v_id": {
+                        "type": "string"
+                    },
+                    "doors": {
+                        "type": "string"
+                    },
+                    "transmission": {
+                        "type": "string"
+                    },
+                    "v_name": {
+                        "type": "string"
+                    },
+                    "fuel_policy": {
+                        "type": "string"
+                    },
+                    "unlimited_mileage": {
+                        "type": "number"
+                    }
+                    },
+                    "required": [
+                    "airbags",
+                    "seats",
+                    "aircon",
+                    "cma_compliant",
+                    "fuel_type",
+                    "free_cancellation",
+                    "group",
+                    "suitcases",
+                    "mileage",
+                    "label",
+                    "v_id",
+                    "doors",
+                    "transmission",
+                    "v_name",
+                    "fuel_policy",
+                    "unlimited_mileage"
+                    ]
+                },
+                "content": {
+                    "type": "object",
+                    "properties": {
+                    "badges": {
+                        "type": "array",
+                        "items": {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                            "type": "string"
+                            },
+                            "variation": {
+                            "type": "string"
+                            },
+                            "text": {
+                            "type": "string"
+                            }
+                        },
+                        "required": [
+                            "type",
+                            "variation",
+                            "text"
+                        ]
+                        }
+                    },
+                    "supplier": {
+                        "type": "object",
+                        "properties": {
+                        "rating": {
+                            "type": "object",
+                            "properties": {
+                            "subtitle": {
+                                "type": "string"
+                            },
+                            "localisedRating": {
+                                "type": "object",
+                                "properties": {
+                                "displayValue": {
+                                    "type": "string"
+                                },
+                                "rawValue": {
+                                    "type": "number"
+                                }
+                                },
+                                "required": [
+                                "displayValue",
+                                "rawValue"
+                                ]
+                            },
+                            "title": {
+                                "type": "string"
+                            },
+                            "average": {
+                                "type": "string"
+                            }
+                            },
+                            "required": [
+                            "subtitle",
+                            "localisedRating",
+                            "title",
+                            "average"
+                            ]
+                        },
+                        "name": {
+                            "type": "string"
+                        }
+                        },
+                        "required": [
+                        "name"
+                        ]
+                    }
+                    },
+                    "required": [
+                    "badges",
+                    "supplier"
+                    ]
+                },
+                "route_info": {
+                    "type": "object",
+                    "properties": {
+                    "pickup": {
+                        "type": "object",
+                        "properties": {
+                        "longitude": {
+                            "type": "string"
+                        },
+                        "location_type": {
+                            "type": "string"
+                        },
+                        "name": {
+                            "type": "string"
+                        },
+                        "latitude": {
+                            "type": "string"
+                        },
+                        "location_hash": {
+                            "type": "string"
+                        },
+                        "location_id": {
+                            "type": "string"
+                        },
+                        "address": {
+                            "type": "string"
+                        },
+                        "country_code": {
+                            "type": "string"
+                        }
+                        },
+                        "required": [
+                        "longitude",
+                        "location_type",
+                        "name",
+                        "latitude",
+                        "location_hash",
+                        "location_id",
+                        "address",
+                        "country_code"
+                        ]
+                    },
+                    "dropoff": {
+                        "type": "object",
+                        "properties": {
+                        "address": {
+                            "type": "string"
+                        },
+                        "country_code": {
+                            "type": "string"
+                        },
+                        "location_hash": {
+                            "type": "string"
+                        },
+                        "location_id": {
+                            "type": "string"
+                        },
+                        "longitude": {
+                            "type": "string"
+                        },
+                        "location_type": {
+                            "type": "string"
+                        },
+                        "name": {
+                            "type": "string"
+                        },
+                        "latitude": {
+                            "type": "string"
+                        }
+                        },
+                        "required": [
+                        "address",
+                        "country_code",
+                        "location_hash",
+                        "location_id",
+                        "longitude",
+                        "location_type",
+                        "name",
+                        "latitude"
+                        ]
+                    }
+                    },
+                    "required": [
+                    "pickup",
+                    "dropoff"
+                    ]
+                },
+                "accessibility": {
+                    "type": "object",
+                    "properties": {
+                    "transmission": {
+                        "type": "string"
+                    },
+                    "pick_up_location": {
+                        "type": "string"
+                    },
+                    "fuel_policy": {
+                        "type": "string"
+                    },
+                    "supplier_rating": {
+                        "type": "string"
+                    }
+                    },
+                    "required": [
+                    "transmission",
+                    "pick_up_location",
+                    "fuel_policy",
+                    "supplier_rating"
+                    ]
+                },
+                "supplier_info": {
+                    "type": "object",
+                    "properties": {
+                    "pickup_instructions": {
+                        "type": "string"
+                    },
+                    "address": {
+                        "type": "string"
+                    },
+                    "logo_url": {
+                        "type": "string"
+                    },
+                    "latitude": {
+                        "type": "string"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "location_type": {
+                        "type": "string"
+                    },
+                    "longitude": {
+                        "type": "string"
+                    },
+                    "may_require_credit_card_guarantee": {
+                        "type": "boolean"
+                    },
+                    "dropoff_instructions": {
+                        "type": "string"
+                    }
+                    },
+                    "required": [
+                    "pickup_instructions",
+                    "address",
+                    "logo_url",
+                    "latitude",
+                    "name",
+                    "location_type",
+                    "longitude",
+                    "may_require_credit_card_guarantee",
+                    "dropoff_instructions"
+                    ]
+                },
+                "pricing_info": {
+                    "type": "object",
+                    "properties": {
+                    "fee_breakdown": {
+                        "type": "object",
+                        "properties": {
+                        "known_fees": {
+                            "type": "array",
+                            "items": {
+                            "type": "object",
+                            "properties": {
+                                "max_amount": {
+                                "type": "number"
+                                },
+                                "is_tax_included": {
+                                "type": "number"
+                                },
+                                "currency": {
+                                "type": "string"
+                                },
+                                "min_amount": {
+                                "type": "number"
+                                },
+                                "type": {
+                                "type": "string"
+                                },
+                                "amount": {
+                                "type": "number"
+                                },
+                                "is_always_payable": {
+                                "type": "number"
+                                },
+                                "distance_allowed": {
+                                "type": "object",
+                                "properties": {
+                                    "is_unlimited": {
+                                    "type": "number"
+                                    },
+                                    "is_km": {
+                                    "type": "number"
+                                    }
+                                },
+                                "required": [
+                                    "is_unlimited",
+                                    "is_km"
+                                ]
+                                }
+                            },
+                            "required": [
+                                "type",
+                                "is_always_payable"
+                            ]
+                            }
+                        },
+                        "fuel_policy": {
+                            "type": "object",
+                            "properties": {
+                            "type": {
+                                "type": "string"
+                            },
+                            "amount": {
+                                "type": "number"
+                            }
+                            },
+                            "required": [
+                            "type",
+                            "amount"
+                            ]
+                        }
+                        },
+                        "required": [
+                        "known_fees",
+                        "fuel_policy"
+                        ]
+                    },
+                    "price": {
+                        "type": "number"
+                    },
+                    "drive_away_price": {
+                        "type": "number"
+                    },
+                    "base_currency": {
+                        "type": "string"
+                    },
+                    "pay_when": {
+                        "type": "string"
+                    },
+                    "deposit": {
+                        "type": "number"
+                    },
+                    "currency": {
+                        "type": "string"
+                    },
+                    "base_price": {
+                        "type": "number"
+                    },
+                    "discount": {
+                        "type": "number"
+                    },
+                    "drive_away_price_is_approx": {
+                        "type": "boolean"
+                    },
+                    "base_deposit": {
+                        "type": "number"
+                    },
+                    "quote_allowed": {
+                        "type": "number"
+                    }
+                    },
+                    "required": [
+                    "fee_breakdown",
+                    "price",
+                    "drive_away_price",
+                    "base_currency",
+                    "pay_when",
+                    "deposit",
+                    "currency",
+                    "base_price",
+                    "discount",
+                    "drive_away_price_is_approx",
+                    "base_deposit",
+                    "quote_allowed"
+                    ]
+                },
+                "freebies": {
+                    "type": "array",
+                    "items": {
+                    "type": "string"
+                    }
+                }
+                },
+                "required": [
+                "vehicle_id",
+                "fee_info",
+                "rating_info",
+                "vehicle_info",
+                "content",
+                "route_info",
+                "accessibility",
+                "supplier_info",
+                "pricing_info",
+                "freebies"
+                ]
+            }
+            },
+            "search_context": {
+            "type": "object",
+            "properties": {
+                "searchKey": {
+                "type": "string"
+                },
+                "searchId": {
+                "type": "string"
+                },
+                "recommendationsSearchUniqueId": {
+                "type": "string"
+                }
+            },
+            "required": [
+                "searchKey",
+                "searchId",
+                "recommendationsSearchUniqueId"
+            ]
+            },
+            "count": {
+            "type": "number"
+            },
+            "meta": {
+            "type": "object",
+            "properties": {
+                "response_code": {
+                "type": "number"
+                }
+            },
+            "required": [
+                "response_code"
+            ]
+            },
+            "title": {
+            "type": "string"
+            },
+            "type": {
+            "type": "string"
+            },
+            "sort": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                "title_tag": {
+                    "type": "string"
+                },
+                "identifier": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+                },
+                "required": [
+                "title_tag",
+                "identifier",
+                "name"
+                ]
+            }
+            },
+            "search_key": {
+            "type": "string"
+            },
+            "provider": {
+            "type": "string"
+            }
+        },
+        "required": [
+            "filter",
+            "is_genius_location",
+            "content",
+            "search_results",
+            "search_context",
+            "count",
+            "meta",
+            "title",
+            "type",
+            "sort",
+            "search_key",
+            "provider"
+        ]
+        }
+    },
+    "required": [
+        "status",
+        "message",
+        "data"
+    ]
+    }
+    

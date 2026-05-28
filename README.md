@@ -218,7 +218,7 @@ client at the `api_base` / `api_key` pair above.
 
 ## 7. Data
 
-Place the ToolJSON benchmark under `data/` (git-ignored):
+The ToolJSON benchmark is included in this repo under `data/`:
 
 ```
 data/toolJSONprocessing/generate_qa_pairs/data/

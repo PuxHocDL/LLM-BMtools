@@ -1,0 +1,836 @@
+
+    {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Response schema for the search hotels by coordinates endpoint.",
+    "type": "object",
+    "properties": {
+        "status": {
+        "type": "boolean"
+        },
+        "message": {
+        "type": "string"
+        },
+        "data": {
+        "type": "object",
+        "properties": {
+            "count": {
+            "type": "number"
+            },
+            "primary_count": {
+            "type": "number"
+            },
+            "extended_count": {
+            "type": "number"
+            },
+            "page_loading_threshold": {
+            "type": "number"
+            },
+            "filters": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                "title": {
+                    "type": "string"
+                },
+                "field": {
+                    "type": "string"
+                }
+                },
+                "required": [
+                "title",
+                "field"
+                ]
+            }
+            },
+            "result": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                "hotel_id": {
+                    "type": "number"
+                },
+                "preferred_plus": {
+                    "type": "number"
+                },
+                "class_is_estimated": {
+                    "type": "number"
+                },
+                "block_ids": {
+                    "type": "array",
+                    "items": {
+                    "type": "string"
+                    }
+                },
+                "accommodation_type": {
+                    "type": "number"
+                },
+                "longitude": {
+                    "type": "number"
+                },
+                "latitude": {
+                    "type": "number"
+                },
+                "checkout": {
+                    "type": "object",
+                    "properties": {
+                    "until": {
+                        "type": "string"
+                    },
+                    "from": {
+                        "type": "string"
+                    }
+                    },
+                    "required": [
+                    "until"
+                    ]
+                },
+                "min_total_price": {
+                    "type": "number"
+                },
+                "is_smart_deal": {
+                    "type": "number"
+                },
+                "city_in_trans": {
+                    "type": "string"
+                },
+                "is_tpi_exclusive_property": {
+                    "type": "number"
+                },
+                "timezone": {
+                    "type": "string"
+                },
+                "unit_configuration_label": {
+                    "type": "string"
+                },
+                "urgency_message": {
+                    "type": "string"
+                },
+                "review_score": {
+                    "type": "number"
+                },
+                "class": {
+                    "type": "number"
+                },
+                "badges": {
+                    "type": "array",
+                    "items": {
+                    "type": "object",
+                    "properties": {
+                        "text": {
+                        "type": "string"
+                        },
+                        "badge_variant": {
+                        "type": "string"
+                        },
+                        "id": {
+                        "type": "string"
+                        }
+                    },
+                    "required": [
+                        "text",
+                        "badge_variant",
+                        "id"
+                    ]
+                    }
+                },
+                "last_reservation_data": {
+                    "type": "object",
+                    "properties": {
+                    "last_reservation_ellapsed_months": {
+                        "type": "number"
+                    }
+                    },
+                    "required": [
+                    "last_reservation_ellapsed_months"
+                    ]
+                },
+                "extended": {
+                    "type": "number"
+                },
+                "checkin": {
+                    "type": "object",
+                    "properties": {
+                    "from": {
+                        "type": "string"
+                    },
+                    "until": {
+                        "type": "string"
+                    }
+                    },
+                    "required": [
+                    "from"
+                    ]
+                },
+                "soldout": {
+                    "type": "number"
+                },
+                "hotel_has_vb_boost": {
+                    "type": "number"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "is_genius_deal": {
+                    "type": "number"
+                },
+                "has_swimming_pool": {
+                    "type": "number"
+                },
+                "is_no_prepayment_block": {
+                    "type": "number"
+                },
+                "bwallet": {
+                    "type": "object",
+                    "properties": {
+                    "hotel_eligibility": {
+                        "type": "number"
+                    }
+                    },
+                    "required": [
+                    "hotel_eligibility"
+                    ]
+                },
+                "default_wishlist_name": {
+                    "type": "string"
+                },
+                "ufi": {
+                    "type": "number"
+                },
+                "is_free_cancellable": {
+                    "type": "number"
+                },
+                "preferred": {
+                    "type": "number"
+                },
+                "main_photo_id": {
+                    "type": "number"
+                },
+                "default_language": {
+                    "type": "string"
+                },
+                "review_score_word": {
+                    "type": "string"
+                },
+                "booking_home": {
+                    "type": "object",
+                    "properties": {
+                    "group": {
+                        "type": "string"
+                    },
+                    "segment": {
+                        "type": "number"
+                    },
+                    "is_single_unit_property": {
+                        "type": "number"
+                    },
+                    "is_booking_home": {
+                        "type": "number"
+                    },
+                    "quality_class": {
+                        "type": "number"
+                    }
+                    },
+                    "required": [
+                    "group",
+                    "segment",
+                    "is_single_unit_property",
+                    "is_booking_home",
+                    "quality_class"
+                    ]
+                },
+                "genius_discount_percentage": {
+                    "type": "number"
+                },
+                "hotel_name_trans": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
+                "hotel_include_breakfast": {
+                    "type": "number"
+                },
+                "composite_price_breakdown": {
+                    "type": "object",
+                    "properties": {
+                    "price_display_config": {
+                        "type": "array",
+                        "items": {
+                        "type": "object",
+                        "properties": {
+                            "value": {
+                            "type": "number"
+                            },
+                            "key": {
+                            "type": "string"
+                            }
+                        },
+                        "required": [
+                            "value",
+                            "key"
+                        ]
+                        }
+                    },
+                    "all_inclusive_amount": {
+                        "type": "object",
+                        "properties": {
+                        "amount_rounded": {
+                            "type": "string"
+                        },
+                        "value": {
+                            "type": "number"
+                        },
+                        "amount_unrounded": {
+                            "type": "string"
+                        },
+                        "currency": {
+                            "type": "string"
+                        }
+                        },
+                        "required": [
+                        "amount_rounded",
+                        "value",
+                        "amount_unrounded",
+                        "currency"
+                        ]
+                    },
+                    "client_translations": {
+                        "type": "object",
+                        "properties": {
+                        "tooltip_total_text": {
+                            "type": "string"
+                        }
+                        },
+                        "required": [
+                        "tooltip_total_text"
+                        ]
+                    },
+                    "benefits": {
+                        "type": "array",
+                        "items": {
+                        "type": "object",
+                        "properties": {
+                            "kind": {
+                            "type": "string"
+                            },
+                            "name": {
+                            "type": "string"
+                            },
+                            "identifier": {
+                            "type": "string"
+                            },
+                            "details": {
+                            "type": "string"
+                            },
+                            "badge_variant": {
+                            "type": "string"
+                            }
+                        },
+                        "required": [
+                            "kind",
+                            "name",
+                            "identifier",
+                            "details",
+                            "badge_variant"
+                        ]
+                        }
+                    },
+                    "has_long_stays_weekly_rate_price": {
+                        "type": "number"
+                    },
+                    "excluded_amount": {
+                        "type": "object",
+                        "properties": {
+                        "currency": {
+                            "type": "string"
+                        },
+                        "value": {
+                            "type": "number"
+                        },
+                        "amount_unrounded": {
+                            "type": "string"
+                        },
+                        "amount_rounded": {
+                            "type": "string"
+                        }
+                        },
+                        "required": [
+                        "currency",
+                        "value",
+                        "amount_unrounded",
+                        "amount_rounded"
+                        ]
+                    },
+                    "gross_amount_per_night": {
+                        "type": "object",
+                        "properties": {
+                        "currency": {
+                            "type": "string"
+                        },
+                        "value": {
+                            "type": "number"
+                        },
+                        "amount_unrounded": {
+                            "type": "string"
+                        },
+                        "amount_rounded": {
+                            "type": "string"
+                        }
+                        },
+                        "required": [
+                        "currency",
+                        "value",
+                        "amount_unrounded",
+                        "amount_rounded"
+                        ]
+                    },
+                    "net_amount": {
+                        "type": "object",
+                        "properties": {
+                        "currency": {
+                            "type": "string"
+                        },
+                        "amount_unrounded": {
+                            "type": "string"
+                        },
+                        "value": {
+                            "type": "number"
+                        },
+                        "amount_rounded": {
+                            "type": "string"
+                        }
+                        },
+                        "required": [
+                        "currency",
+                        "amount_unrounded",
+                        "value",
+                        "amount_rounded"
+                        ]
+                    },
+                    "discounted_amount": {
+                        "type": "object",
+                        "properties": {
+                        "currency": {
+                            "type": "string"
+                        },
+                        "value": {
+                            "type": "number"
+                        },
+                        "amount_unrounded": {
+                            "type": "string"
+                        },
+                        "amount_rounded": {
+                            "type": "string"
+                        }
+                        },
+                        "required": [
+                        "currency",
+                        "value",
+                        "amount_unrounded",
+                        "amount_rounded"
+                        ]
+                    },
+                    "included_taxes_and_charges_amount": {
+                        "type": "object",
+                        "properties": {
+                        "amount_unrounded": {
+                            "type": "string"
+                        },
+                        "value": {
+                            "type": "number"
+                        },
+                        "currency": {
+                            "type": "string"
+                        },
+                        "amount_rounded": {
+                            "type": "string"
+                        }
+                        },
+                        "required": [
+                        "amount_unrounded",
+                        "value",
+                        "currency",
+                        "amount_rounded"
+                        ]
+                    },
+                    "items": {
+                        "type": "array",
+                        "items": {
+                        "type": "object",
+                        "properties": {
+                            "name": {
+                            "type": "string"
+                            },
+                            "item_amount": {
+                            "type": "object",
+                            "properties": {
+                                "currency": {
+                                "type": "string"
+                                },
+                                "amount_unrounded": {
+                                "type": "string"
+                                },
+                                "value": {
+                                "type": "number"
+                                },
+                                "amount_rounded": {
+                                "type": "string"
+                                }
+                            },
+                            "required": [
+                                "currency",
+                                "amount_unrounded",
+                                "value",
+                                "amount_rounded"
+                            ]
+                            },
+                            "base": {
+                            "type": "object",
+                            "properties": {
+                                "kind": {
+                                "type": "string"
+                                },
+                                "percentage": {
+                                "type": "number"
+                                },
+                                "base_amount": {
+                                "type": "number"
+                                }
+                            },
+                            "required": [
+                                "kind"
+                            ]
+                            },
+                            "details": {
+                            "type": "string"
+                            },
+                            "kind": {
+                            "type": "string"
+                            },
+                            "inclusion_type": {
+                            "type": "string"
+                            },
+                            "identifier": {
+                            "type": "string"
+                            }
+                        },
+                        "required": [
+                            "name",
+                            "item_amount",
+                            "base",
+                            "kind"
+                        ]
+                        }
+                    },
+                    "strikethrough_amount_per_night": {
+                        "type": "object",
+                        "properties": {
+                        "value": {
+                            "type": "number"
+                        },
+                        "amount_unrounded": {
+                            "type": "string"
+                        },
+                        "currency": {
+                            "type": "string"
+                        },
+                        "amount_rounded": {
+                            "type": "string"
+                        }
+                        },
+                        "required": [
+                        "value",
+                        "amount_unrounded",
+                        "currency",
+                        "amount_rounded"
+                        ]
+                    },
+                    "strikethrough_amount": {
+                        "type": "object",
+                        "properties": {
+                        "amount_unrounded": {
+                            "type": "string"
+                        },
+                        "value": {
+                            "type": "number"
+                        },
+                        "currency": {
+                            "type": "string"
+                        },
+                        "amount_rounded": {
+                            "type": "string"
+                        }
+                        },
+                        "required": [
+                        "amount_unrounded",
+                        "value",
+                        "currency",
+                        "amount_rounded"
+                        ]
+                    },
+                    "gross_amount_hotel_currency": {
+                        "type": "object",
+                        "properties": {
+                        "amount_unrounded": {
+                            "type": "string"
+                        },
+                        "value": {
+                            "type": "number"
+                        },
+                        "currency": {
+                            "type": "string"
+                        },
+                        "amount_rounded": {
+                            "type": "string"
+                        }
+                        },
+                        "required": [
+                        "amount_unrounded",
+                        "value",
+                        "currency",
+                        "amount_rounded"
+                        ]
+                    },
+                    "gross_amount": {
+                        "type": "object",
+                        "properties": {
+                        "amount_rounded": {
+                            "type": "string"
+                        },
+                        "currency": {
+                            "type": "string"
+                        },
+                        "amount_unrounded": {
+                            "type": "string"
+                        },
+                        "value": {
+                            "type": "number"
+                        }
+                        },
+                        "required": [
+                        "amount_rounded",
+                        "currency",
+                        "amount_unrounded",
+                        "value"
+                        ]
+                    },
+                    "charges_details": {
+                        "type": "object",
+                        "properties": {
+                        "amount": {
+                            "type": "object",
+                            "properties": {
+                            "currency": {
+                                "type": "string"
+                            },
+                            "value": {
+                                "type": "number"
+                            }
+                            },
+                            "required": [
+                            "currency",
+                            "value"
+                            ]
+                        },
+                        "mode": {
+                            "type": "string"
+                        }
+                        },
+                        "required": [
+                        "amount",
+                        "mode"
+                        ]
+                    },
+                    "all_inclusive_amount_hotel_currency": {
+                        "type": "object",
+                        "properties": {
+                        "amount_rounded": {
+                            "type": "string"
+                        },
+                        "currency": {
+                            "type": "string"
+                        },
+                        "amount_unrounded": {
+                            "type": "string"
+                        },
+                        "value": {
+                            "type": "number"
+                        }
+                        },
+                        "required": [
+                        "amount_rounded",
+                        "currency",
+                        "amount_unrounded",
+                        "value"
+                        ]
+                    },
+                    "has_long_stays_monthly_rate_price": {
+                        "type": "number"
+                    }
+                    },
+                    "required": [
+                    "price_display_config",
+                    "all_inclusive_amount",
+                    "client_translations",
+                    "benefits",
+                    "has_long_stays_weekly_rate_price",
+                    "excluded_amount",
+                    "gross_amount_per_night",
+                    "net_amount",
+                    "discounted_amount",
+                    "included_taxes_and_charges_amount",
+                    "items",
+                    "strikethrough_amount_per_night",
+                    "strikethrough_amount",
+                    "gross_amount_hotel_currency",
+                    "gross_amount",
+                    "charges_details",
+                    "all_inclusive_amount_hotel_currency",
+                    "has_long_stays_monthly_rate_price"
+                    ]
+                },
+                "countrycode": {
+                    "type": "string"
+                },
+                "review_nr": {
+                    "type": "number"
+                },
+                "hotel_name": {
+                    "type": "string"
+                },
+                "has_free_parking": {
+                    "type": "number"
+                },
+                "currencycode": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                }
+                },
+                "required": [
+                "hotel_id",
+                "preferred_plus",
+                "class_is_estimated",
+                "block_ids",
+                "accommodation_type",
+                "longitude",
+                "latitude",
+                "checkout",
+                "min_total_price",
+                "is_smart_deal",
+                "city_in_trans",
+                "is_tpi_exclusive_property",
+                "timezone",
+                "unit_configuration_label",
+                "urgency_message",
+                "review_score",
+                "class",
+                "badges",
+                "last_reservation_data",
+                "extended",
+                "checkin",
+                "soldout",
+                "hotel_has_vb_boost",
+                "type",
+                "is_genius_deal",
+                "has_swimming_pool",
+                "is_no_prepayment_block",
+                "bwallet",
+                "default_wishlist_name",
+                "ufi",
+                "is_free_cancellable",
+                "preferred",
+                "main_photo_id",
+                "default_language",
+                "review_score_word",
+                "booking_home",
+                "genius_discount_percentage",
+                "hotel_name_trans",
+                "city",
+                "hotel_include_breakfast",
+                "composite_price_breakdown",
+                "countrycode",
+                "review_nr",
+                "hotel_name",
+                "has_free_parking",
+                "currencycode",
+                "id"
+                ]
+            }
+            },
+            "room_distribution": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                "adults": {
+                    "type": "string"
+                }
+                },
+                "required": [
+                "adults"
+                ]
+            }
+            },
+            "b_max_los_data": {
+            "type": "object",
+            "properties": {
+                "has_extended_los": {
+                "type": "number"
+                },
+                "extended_los": {
+                "type": "number"
+                },
+                "is_fullon": {
+                "type": "number"
+                },
+                "experiment": {
+                "type": "string"
+                },
+                "max_allowed_los": {
+                "type": "number"
+                },
+                "default_los": {
+                "type": "number"
+                }
+            },
+            "required": [
+                "has_extended_los",
+                "extended_los",
+                "is_fullon",
+                "experiment",
+                "max_allowed_los",
+                "default_los"
+            ]
+            },
+            "unfiltered_count": {
+            "type": "number"
+            },
+            "unfiltered_primary_count": {
+            "type": "number"
+            }
+        },
+        "required": [
+            "count",
+            "primary_count",
+            "extended_count",
+            "page_loading_threshold",
+            "filters",
+            "result",
+            "room_distribution",
+            "b_max_los_data",
+            "unfiltered_count",
+            "unfiltered_primary_count"
+        ]
+        }
+    },
+    "required": [
+        "status",
+        "message",
+        "data"
+    ]
+    }    
+    

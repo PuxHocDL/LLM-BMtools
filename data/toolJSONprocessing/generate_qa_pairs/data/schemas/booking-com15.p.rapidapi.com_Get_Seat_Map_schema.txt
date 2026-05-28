@@ -1,0 +1,1185 @@
+
+    {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Response schema for the get seat map endpoint.",
+    "type": "object",
+    "properties": {
+        "status": {
+        "type": "boolean"
+        },
+        "message": {
+        "type": "string"
+        },
+        "data": {
+        "type": "object",
+        "properties": {
+            "checkedInBaggage": {
+            "type": "object",
+            "properties": {
+                "airProductReference": {
+                "type": "string"
+                },
+                "options": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                    "luggageAllowance": {
+                        "type": "object",
+                        "properties": {
+                        "luggageType": {
+                            "type": "string"
+                        },
+                        "ruleType": {
+                            "type": "string"
+                        },
+                        "maxPiece": {
+                            "type": "number"
+                        },
+                        "maxWeightPerPiece": {
+                            "type": "number"
+                        },
+                        "massUnit": {
+                            "type": "string"
+                        }
+                        },
+                        "required": [
+                        "luggageType",
+                        "ruleType",
+                        "maxPiece",
+                        "maxWeightPerPiece",
+                        "massUnit"
+                        ]
+                    },
+                    "priceBreakdown": {
+                        "type": "object",
+                        "properties": {
+                        "total": {
+                            "type": "object",
+                            "properties": {
+                            "currencyCode": {
+                                "type": "string"
+                            },
+                            "units": {
+                                "type": "number"
+                            },
+                            "nanos": {
+                                "type": "number"
+                            }
+                            },
+                            "required": [
+                            "currencyCode",
+                            "units",
+                            "nanos"
+                            ]
+                        },
+                        "baseFare": {
+                            "type": "object",
+                            "properties": {
+                            "currencyCode": {
+                                "type": "string"
+                            },
+                            "units": {
+                                "type": "number"
+                            },
+                            "nanos": {
+                                "type": "number"
+                            }
+                            },
+                            "required": [
+                            "currencyCode",
+                            "units",
+                            "nanos"
+                            ]
+                        },
+                        "fee": {
+                            "type": "object",
+                            "properties": {
+                            "currencyCode": {
+                                "type": "string"
+                            },
+                            "units": {
+                                "type": "number"
+                            },
+                            "nanos": {
+                                "type": "number"
+                            }
+                            },
+                            "required": [
+                            "currencyCode",
+                            "units",
+                            "nanos"
+                            ]
+                        },
+                        "tax": {
+                            "type": "object",
+                            "properties": {
+                            "currencyCode": {
+                                "type": "string"
+                            },
+                            "units": {
+                                "type": "number"
+                            },
+                            "nanos": {
+                                "type": "number"
+                            }
+                            },
+                            "required": [
+                            "currencyCode",
+                            "units",
+                            "nanos"
+                            ]
+                        },
+                        "discount": {
+                            "type": "object",
+                            "properties": {
+                            "currencyCode": {
+                                "type": "string"
+                            },
+                            "units": {
+                                "type": "number"
+                            },
+                            "nanos": {
+                                "type": "number"
+                            }
+                            },
+                            "required": [
+                            "currencyCode",
+                            "units",
+                            "nanos"
+                            ]
+                        },
+                        "totalWithoutDiscount": {
+                            "type": "object",
+                            "properties": {
+                            "currencyCode": {
+                                "type": "string"
+                            },
+                            "units": {
+                                "type": "number"
+                            },
+                            "nanos": {
+                                "type": "number"
+                            }
+                            },
+                            "required": [
+                            "currencyCode",
+                            "units",
+                            "nanos"
+                            ]
+                        }
+                        },
+                        "required": [
+                        "total",
+                        "baseFare",
+                        "fee",
+                        "tax",
+                        "discount",
+                        "totalWithoutDiscount"
+                        ]
+                    },
+                    "travellers": {
+                        "type": "array",
+                        "items": {
+                        "type": "string"
+                        }
+                    },
+                    "preSelected": {
+                        "type": "boolean"
+                    }
+                    },
+                    "required": [
+                    "luggageAllowance",
+                    "priceBreakdown",
+                    "travellers",
+                    "preSelected"
+                    ]
+                }
+                }
+            },
+            "required": [
+                "airProductReference",
+                "options"
+            ]
+            },
+            "flexibleTicket": {
+            "type": "object",
+            "properties": {
+                "airProductReference": {
+                "type": "string"
+                },
+                "travellers": {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                }
+                },
+                "priceBreakdown": {
+                "type": "object",
+                "properties": {
+                    "total": {
+                    "type": "object",
+                    "properties": {
+                        "currencyCode": {
+                        "type": "string"
+                        },
+                        "units": {
+                        "type": "number"
+                        },
+                        "nanos": {
+                        "type": "number"
+                        }
+                    },
+                    "required": [
+                        "currencyCode",
+                        "units",
+                        "nanos"
+                    ]
+                    },
+                    "baseFare": {
+                    "type": "object",
+                    "properties": {
+                        "currencyCode": {
+                        "type": "string"
+                        },
+                        "units": {
+                        "type": "number"
+                        },
+                        "nanos": {
+                        "type": "number"
+                        }
+                    },
+                    "required": [
+                        "currencyCode",
+                        "units",
+                        "nanos"
+                    ]
+                    },
+                    "fee": {
+                    "type": "object",
+                    "properties": {
+                        "currencyCode": {
+                        "type": "string"
+                        },
+                        "units": {
+                        "type": "number"
+                        },
+                        "nanos": {
+                        "type": "number"
+                        }
+                    },
+                    "required": [
+                        "currencyCode",
+                        "units",
+                        "nanos"
+                    ]
+                    },
+                    "tax": {
+                    "type": "object",
+                    "properties": {
+                        "currencyCode": {
+                        "type": "string"
+                        },
+                        "units": {
+                        "type": "number"
+                        },
+                        "nanos": {
+                        "type": "number"
+                        }
+                    },
+                    "required": [
+                        "currencyCode",
+                        "units",
+                        "nanos"
+                    ]
+                    },
+                    "discount": {
+                    "type": "object",
+                    "properties": {
+                        "currencyCode": {
+                        "type": "string"
+                        },
+                        "units": {
+                        "type": "number"
+                        },
+                        "nanos": {
+                        "type": "number"
+                        }
+                    },
+                    "required": [
+                        "currencyCode",
+                        "units",
+                        "nanos"
+                    ]
+                    },
+                    "totalWithoutDiscount": {
+                    "type": "object",
+                    "properties": {
+                        "currencyCode": {
+                        "type": "string"
+                        },
+                        "units": {
+                        "type": "number"
+                        },
+                        "nanos": {
+                        "type": "number"
+                        }
+                    },
+                    "required": [
+                        "currencyCode",
+                        "units",
+                        "nanos"
+                    ]
+                    }
+                },
+                "required": [
+                    "total",
+                    "baseFare",
+                    "fee",
+                    "tax",
+                    "discount",
+                    "totalWithoutDiscount"
+                ]
+                },
+                "preSelected": {
+                "type": "boolean"
+                },
+                "recommendation": {
+                "type": "object",
+                "properties": {
+                    "recommended": {
+                    "type": "boolean"
+                    },
+                    "confidence": {
+                    "type": "string"
+                    }
+                },
+                "required": [
+                    "recommended",
+                    "confidence"
+                ]
+                },
+                "supplierInfo": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                    "type": "string"
+                    }
+                },
+                "required": [
+                    "name"
+                ]
+                }
+            },
+            "required": [
+                "airProductReference",
+                "travellers",
+                "priceBreakdown",
+                "preSelected",
+                "recommendation",
+                "supplierInfo"
+            ]
+            },
+            "mealPreference": {
+            "type": "object",
+            "properties": {
+                "airProductReference": {
+                "type": "string"
+                },
+                "travellers": {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                }
+                },
+                "choices": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                    "mealType": {
+                        "type": "string"
+                    },
+                    "priceBreakdown": {
+                        "type": "object",
+                        "properties": {
+                        "total": {
+                            "type": "object",
+                            "properties": {
+                            "currencyCode": {
+                                "type": "string"
+                            },
+                            "units": {
+                                "type": "number"
+                            },
+                            "nanos": {
+                                "type": "number"
+                            }
+                            },
+                            "required": [
+                            "currencyCode",
+                            "units",
+                            "nanos"
+                            ]
+                        },
+                        "baseFare": {
+                            "type": "object",
+                            "properties": {
+                            "currencyCode": {
+                                "type": "string"
+                            },
+                            "units": {
+                                "type": "number"
+                            },
+                            "nanos": {
+                                "type": "number"
+                            }
+                            },
+                            "required": [
+                            "currencyCode",
+                            "units",
+                            "nanos"
+                            ]
+                        },
+                        "fee": {
+                            "type": "object",
+                            "properties": {
+                            "currencyCode": {
+                                "type": "string"
+                            },
+                            "units": {
+                                "type": "number"
+                            },
+                            "nanos": {
+                                "type": "number"
+                            }
+                            },
+                            "required": [
+                            "currencyCode",
+                            "units",
+                            "nanos"
+                            ]
+                        },
+                        "tax": {
+                            "type": "object",
+                            "properties": {
+                            "currencyCode": {
+                                "type": "string"
+                            },
+                            "units": {
+                                "type": "number"
+                            },
+                            "nanos": {
+                                "type": "number"
+                            }
+                            },
+                            "required": [
+                            "currencyCode",
+                            "units",
+                            "nanos"
+                            ]
+                        },
+                        "discount": {
+                            "type": "object",
+                            "properties": {
+                            "currencyCode": {
+                                "type": "string"
+                            },
+                            "units": {
+                                "type": "number"
+                            },
+                            "nanos": {
+                                "type": "number"
+                            }
+                            },
+                            "required": [
+                            "currencyCode",
+                            "units",
+                            "nanos"
+                            ]
+                        },
+                        "totalWithoutDiscount": {
+                            "type": "object",
+                            "properties": {
+                            "currencyCode": {
+                                "type": "string"
+                            },
+                            "units": {
+                                "type": "number"
+                            },
+                            "nanos": {
+                                "type": "number"
+                            }
+                            },
+                            "required": [
+                            "currencyCode",
+                            "units",
+                            "nanos"
+                            ]
+                        }
+                        },
+                        "required": [
+                        "total",
+                        "baseFare",
+                        "fee",
+                        "tax",
+                        "discount",
+                        "totalWithoutDiscount"
+                        ]
+                    }
+                    },
+                    "required": [
+                    "mealType",
+                    "priceBreakdown"
+                    ]
+                }
+                }
+            },
+            "required": [
+                "airProductReference",
+                "travellers",
+                "choices"
+            ]
+            },
+            "mobileTravelPlan": {
+            "type": "object",
+            "properties": {
+                "priceBreakdown": {
+                "type": "object",
+                "properties": {
+                    "total": {
+                    "type": "object",
+                    "properties": {
+                        "currencyCode": {
+                        "type": "string"
+                        },
+                        "units": {
+                        "type": "number"
+                        },
+                        "nanos": {
+                        "type": "number"
+                        }
+                    },
+                    "required": [
+                        "currencyCode",
+                        "units",
+                        "nanos"
+                    ]
+                    },
+                    "baseFare": {
+                    "type": "object",
+                    "properties": {
+                        "currencyCode": {
+                        "type": "string"
+                        },
+                        "units": {
+                        "type": "number"
+                        },
+                        "nanos": {
+                        "type": "number"
+                        }
+                    },
+                    "required": [
+                        "currencyCode",
+                        "units",
+                        "nanos"
+                    ]
+                    },
+                    "fee": {
+                    "type": "object",
+                    "properties": {
+                        "currencyCode": {
+                        "type": "string"
+                        },
+                        "units": {
+                        "type": "number"
+                        },
+                        "nanos": {
+                        "type": "number"
+                        }
+                    },
+                    "required": [
+                        "currencyCode",
+                        "units",
+                        "nanos"
+                    ]
+                    },
+                    "tax": {
+                    "type": "object",
+                    "properties": {
+                        "currencyCode": {
+                        "type": "string"
+                        },
+                        "units": {
+                        "type": "number"
+                        },
+                        "nanos": {
+                        "type": "number"
+                        }
+                    },
+                    "required": [
+                        "currencyCode",
+                        "units",
+                        "nanos"
+                    ]
+                    },
+                    "discount": {
+                    "type": "object",
+                    "properties": {
+                        "currencyCode": {
+                        "type": "string"
+                        },
+                        "units": {
+                        "type": "number"
+                        },
+                        "nanos": {
+                        "type": "number"
+                        }
+                    },
+                    "required": [
+                        "currencyCode",
+                        "units",
+                        "nanos"
+                    ]
+                    },
+                    "totalWithoutDiscount": {
+                    "type": "object",
+                    "properties": {
+                        "currencyCode": {
+                        "type": "string"
+                        },
+                        "units": {
+                        "type": "number"
+                        },
+                        "nanos": {
+                        "type": "number"
+                        }
+                    },
+                    "required": [
+                        "currencyCode",
+                        "units",
+                        "nanos"
+                    ]
+                    }
+                },
+                "required": [
+                    "total",
+                    "baseFare",
+                    "fee",
+                    "tax",
+                    "discount",
+                    "totalWithoutDiscount"
+                ]
+                }
+            },
+            "required": [
+                "priceBreakdown"
+            ]
+            },
+            "seatMap": {
+            "type": "object",
+            "properties": {
+                "airProductReference": {
+                "type": "string"
+                },
+                "seatMapOption": {
+                "type": "array",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                    "cabins": {
+                        "type": "array",
+                        "items": {
+                        "type": "object",
+                        "properties": {
+                            "class": {
+                            "type": "string"
+                            },
+                            "deck": {
+                            "type": "string"
+                            },
+                            "columns": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                "id": {
+                                    "type": "string"
+                                },
+                                "description": {
+                                    "type": "array",
+                                    "items": {
+                                    "type": "string"
+                                    }
+                                }
+                                },
+                                "required": [
+                                "id",
+                                "description"
+                                ]
+                            }
+                            },
+                            "rows": {
+                            "type": "array",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                "id": {
+                                    "type": "number"
+                                },
+                                "seats": {
+                                    "type": "array",
+                                    "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "colId": {
+                                        "type": "string"
+                                        },
+                                        "description": {
+                                        "type": "string"
+                                        },
+                                        "priceBreakdown": {
+                                        "type": "object",
+                                        "properties": {
+                                            "total": {
+                                            "type": "object",
+                                            "properties": {
+                                                "currencyCode": {
+                                                "type": "string"
+                                                },
+                                                "units": {
+                                                "type": "number"
+                                                },
+                                                "nanos": {
+                                                "type": "number"
+                                                }
+                                            },
+                                            "required": [
+                                                "currencyCode",
+                                                "units",
+                                                "nanos"
+                                            ]
+                                            },
+                                            "baseFare": {
+                                            "type": "object",
+                                            "properties": {
+                                                "currencyCode": {
+                                                "type": "string"
+                                                },
+                                                "units": {
+                                                "type": "number"
+                                                },
+                                                "nanos": {
+                                                "type": "number"
+                                                }
+                                            },
+                                            "required": [
+                                                "currencyCode",
+                                                "units",
+                                                "nanos"
+                                            ]
+                                            },
+                                            "fee": {
+                                            "type": "object",
+                                            "properties": {
+                                                "currencyCode": {
+                                                "type": "string"
+                                                },
+                                                "units": {
+                                                "type": "number"
+                                                },
+                                                "nanos": {
+                                                "type": "number"
+                                                }
+                                            },
+                                            "required": [
+                                                "currencyCode",
+                                                "units",
+                                                "nanos"
+                                            ]
+                                            },
+                                            "tax": {
+                                            "type": "object",
+                                            "properties": {
+                                                "currencyCode": {
+                                                "type": "string"
+                                                },
+                                                "units": {
+                                                "type": "number"
+                                                },
+                                                "nanos": {
+                                                "type": "number"
+                                                }
+                                            },
+                                            "required": [
+                                                "currencyCode",
+                                                "units",
+                                                "nanos"
+                                            ]
+                                            },
+                                            "discount": {
+                                            "type": "object",
+                                            "properties": {
+                                                "currencyCode": {
+                                                "type": "string"
+                                                },
+                                                "units": {
+                                                "type": "number"
+                                                },
+                                                "nanos": {
+                                                "type": "number"
+                                                }
+                                            },
+                                            "required": [
+                                                "currencyCode",
+                                                "units",
+                                                "nanos"
+                                            ]
+                                            },
+                                            "totalWithoutDiscount": {
+                                            "type": "object",
+                                            "properties": {
+                                                "currencyCode": {
+                                                "type": "string"
+                                                },
+                                                "units": {
+                                                "type": "number"
+                                                },
+                                                "nanos": {
+                                                "type": "number"
+                                                }
+                                            },
+                                            "required": [
+                                                "currencyCode",
+                                                "units",
+                                                "nanos"
+                                            ]
+                                            }
+                                        },
+                                        "required": [
+                                            "total",
+                                            "baseFare",
+                                            "fee",
+                                            "tax",
+                                            "discount",
+                                            "totalWithoutDiscount"
+                                        ]
+                                        }
+                                    },
+                                    "required": [
+                                        "colId",
+                                        "description"
+                                    ]
+                                    }
+                                },
+                                "description": {
+                                    "type": "array",
+                                    "items": {
+                                    "type": "string"
+                                    }
+                                }
+                                },
+                                "required": [
+                                "id",
+                                "seats"
+                                ]
+                            }
+                            }
+                        },
+                        "required": [
+                            "class",
+                            "deck",
+                            "columns",
+                            "rows"
+                        ]
+                        }
+                    },
+                    "segmentIndex": {
+                        "type": "number"
+                    },
+                    "legIndex": {
+                        "type": "number"
+                    },
+                    "travellers": {
+                        "type": "array",
+                        "items": {
+                        "type": "string"
+                        }
+                    }
+                    },
+                    "required": [
+                    "cabins",
+                    "segmentIndex",
+                    "legIndex",
+                    "travellers"
+                    ]
+                }
+                }
+            },
+            "required": [
+                "airProductReference",
+                "seatMapOption"
+            ]
+            },
+            "travelInsurance": {
+            "type": "object",
+            "properties": {
+                "options": {
+                "type": "object",
+                "properties": {
+                    "type": {
+                    "type": "string"
+                    },
+                    "travellers": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                    },
+                    "priceBreakdown": {
+                    "type": "object",
+                    "properties": {
+                        "total": {
+                        "type": "object",
+                        "properties": {
+                            "currencyCode": {
+                            "type": "string"
+                            },
+                            "units": {
+                            "type": "number"
+                            },
+                            "nanos": {
+                            "type": "number"
+                            }
+                        },
+                        "required": [
+                            "currencyCode",
+                            "units",
+                            "nanos"
+                        ]
+                        },
+                        "baseFare": {
+                        "type": "object",
+                        "properties": {
+                            "currencyCode": {
+                            "type": "string"
+                            },
+                            "units": {
+                            "type": "number"
+                            },
+                            "nanos": {
+                            "type": "number"
+                            }
+                        },
+                        "required": [
+                            "currencyCode",
+                            "units",
+                            "nanos"
+                        ]
+                        },
+                        "fee": {
+                        "type": "object",
+                        "properties": {
+                            "currencyCode": {
+                            "type": "string"
+                            },
+                            "units": {
+                            "type": "number"
+                            },
+                            "nanos": {
+                            "type": "number"
+                            }
+                        },
+                        "required": [
+                            "currencyCode",
+                            "units",
+                            "nanos"
+                        ]
+                        },
+                        "tax": {
+                        "type": "object",
+                        "properties": {
+                            "currencyCode": {
+                            "type": "string"
+                            },
+                            "units": {
+                            "type": "number"
+                            },
+                            "nanos": {
+                            "type": "number"
+                            }
+                        },
+                        "required": [
+                            "currencyCode",
+                            "units",
+                            "nanos"
+                        ]
+                        },
+                        "discount": {
+                        "type": "object",
+                        "properties": {
+                            "currencyCode": {
+                            "type": "string"
+                            },
+                            "units": {
+                            "type": "number"
+                            },
+                            "nanos": {
+                            "type": "number"
+                            }
+                        },
+                        "required": [
+                            "currencyCode",
+                            "units",
+                            "nanos"
+                        ]
+                        },
+                        "totalWithoutDiscount": {
+                        "type": "object",
+                        "properties": {
+                            "currencyCode": {
+                            "type": "string"
+                            },
+                            "units": {
+                            "type": "number"
+                            },
+                            "nanos": {
+                            "type": "number"
+                            }
+                        },
+                        "required": [
+                            "currencyCode",
+                            "units",
+                            "nanos"
+                        ]
+                        }
+                    },
+                    "required": [
+                        "total",
+                        "baseFare",
+                        "fee",
+                        "tax",
+                        "discount",
+                        "totalWithoutDiscount"
+                    ]
+                    },
+                    "disclaimer": {
+                    "type": "string"
+                    }
+                },
+                "required": [
+                    "type",
+                    "travellers",
+                    "priceBreakdown",
+                    "disclaimer"
+                ]
+                },
+                "content": {
+                "type": "object",
+                "properties": {
+                    "header": {
+                    "type": "string"
+                    },
+                    "subheader": {
+                    "type": "string"
+                    },
+                    "optInTitle": {
+                    "type": "string"
+                    },
+                    "optOutTitle": {
+                    "type": "string"
+                    },
+                    "exclusions": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                    },
+                    "coveredStatusLabel": {
+                    "type": "string"
+                    },
+                    "notCoveredStatusLabel": {
+                    "type": "string"
+                    },
+                    "benefitsTitle": {
+                    "type": "string"
+                    },
+                    "closeA11y": {
+                    "type": "string"
+                    },
+                    "benefits": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                    },
+                    "finePrint": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                    }
+                },
+                "required": [
+                    "header",
+                    "subheader",
+                    "optInTitle",
+                    "optOutTitle",
+                    "exclusions",
+                    "coveredStatusLabel",
+                    "notCoveredStatusLabel",
+                    "benefitsTitle",
+                    "closeA11y",
+                    "benefits",
+                    "finePrint"
+                ]
+                },
+                "forceForAllTravellers": {
+                "type": "boolean"
+                },
+                "isPerTraveller": {
+                "type": "boolean"
+                },
+                "recommendation": {
+                "type": "object",
+                "properties": {
+                    "recommended": {
+                    "type": "boolean"
+                    },
+                    "confidence": {
+                    "type": "string"
+                    }
+                },
+                "required": [
+                    "recommended",
+                    "confidence"
+                ]
+                }
+            },
+            "required": [
+                "options",
+                "content",
+                "forceForAllTravellers",
+                "isPerTraveller",
+                "recommendation"
+            ]
+            }
+        },
+        "required": [
+            "checkedInBaggage",
+            "flexibleTicket",
+            "mealPreference",
+            "mobileTravelPlan",
+            "seatMap",
+            "travelInsurance"
+        ]
+        }
+    },
+    "required": [
+        "status",
+        "message",
+        "data"
+    ]
+    }    
+
+    
