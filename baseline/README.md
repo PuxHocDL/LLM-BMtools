@@ -4,21 +4,22 @@ This directory is a **self-contained, runnable copy** of the baseline code from
 the paper *"How Good Are LLMs at Processing Tool Outputs?"* (Kate et al., 2025).
 We extracted the relevant scripts from the original `data/toolJSONprocessing/`
 package so that anyone — including a first-year student new to LLM benchmarking
-— can re-run the **three baseline settings** that the rest of our project
+— can re-run the **four baseline settings** that the rest of our project
 compares against.
 
-The three settings, with their EM scores from our re-run on the full 2,067-sample
+The four settings, with their EM scores from our re-run on the full 2,067-sample
 ToolJSON benchmark:
 
-| Model | **Code** | **Code + Schema** | **Answer (direct)** |
-|---|---:|---:|---:|
-| Granite-3.3-8B | 0.325 | 0.451 | **0.519** |
-| GPT-oss-20B | 0.615 | **0.723** | 0.260 |
-| Devstral-Small-24B | 0.672 | **0.720** | 0.649 |
+| Model | **Code** | **Code + Schema** | **Answer (direct)** | **Answer + Schema** |
+|---|---:|---:|---:|---:|
+| Granite-3.3-8B | 0.325 | 0.451 | **0.519** | 0.380 |
+| GPT-oss-20B | 0.615 | **0.723** | 0.260 | 0.270 |
+| Devstral-Small-24B | 0.672 | **0.720** | 0.649 | 0.650 |
 
 `Code` = LLM writes a Python function over the raw JSON. `Code + Schema` = LLM
 also sees the JSON schema. `Answer` = LLM answers the question directly without
-writing code.
+writing code. `Answer + Schema` = direct answer with the JSON schema also
+provided.
 
 ---
 
@@ -150,7 +151,7 @@ paper):
 | `code` | `code_generation` | **Code** |
 | `code_schema` | `code_generation_schema` | **Code + Schema** |
 | `answer` | `direct_prompting` | **Answer** |
-| `answer_schema` | `direct_prompting_schema` | (not in our table) |
+| `answer_schema` | `direct_prompting_schema` | **Answer + Schema** |
 
 ---
 

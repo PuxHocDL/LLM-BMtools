@@ -293,16 +293,17 @@ Per-sample results (CSV + JSON) and a summary are written to `results/`.
 ## 10. Baseline results (re-run of Kate et al., 2025)
 
 Reproduced on the full 2,067-sample benchmark using the code under
-[`baseline/`](baseline/). The three columns are the three baseline settings
-the paper compares: direct answer, code-only, code + JSON schema.
+[`baseline/`](baseline/). The four columns are the four baseline prompting
+settings: code-only, code + JSON schema, direct answer, and answer + JSON
+schema.
 
-| Model | Code (EM / Judge / Contain) | Code + Schema (EM / Judge / Contain) | Answer (EM / Judge / Contain) |
-|---|---|---|---|
-| Granite-3.3-8B | 0.325 / 0.41 / 0.33 | 0.451 / 0.53 / 0.46 | **0.519** / 0.61 / 0.57 |
-| GPT-OSS-20B | 0.615 / 0.76 / 0.62 | **0.723** / 0.85 / 0.74 | 0.260 / 0.44 / 0.59 |
-| Devstral-Small-24B | 0.672 / 0.75 / 0.68 | **0.720** / 0.82 / 0.73 | 0.649 / 0.75 / 0.70 |
+| Model | Code (EM / Judge / Contain) | Code + Schema (EM / Judge / Contain) | Answer (EM / Judge / Contain) | Answer + Schema (EM / Judge / Contain) |
+|---|---|---|---|---|
+| Granite-3.3-8B | 0.325 / 0.41 / 0.33 | 0.451 / 0.53 / 0.46 | **0.519** / 0.61 / 0.57 | 0.380 / 0.45 / 0.42 |
+| GPT-OSS-20B | 0.615 / 0.76 / 0.62 | **0.723** / 0.85 / 0.74 | 0.260 / 0.44 / 0.59 | 0.270 / 0.46 / 0.61 |
+| Devstral-Small-24B | 0.672 / 0.75 / 0.68 | **0.720** / 0.82 / 0.73 | 0.649 / 0.75 / 0.70 | 0.650 / 0.75 / 0.70 |
 
-For each model, **bold** marks the best EM among the three baseline settings —
+For each model, **bold** marks the best EM among the four baseline settings —
 the one we use as the "Baseline" row when comparing against our enhancements
 in §11.
 

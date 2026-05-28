@@ -538,7 +538,7 @@ python run_baseline.py --setup code_schema  --model mistralai/Devstral-Small-250
       <tr><td><code>answer</code></td><td><code>direct_prompting</code></td><td><strong>Answer</strong> column</td></tr>
       <tr><td><code>code</code></td><td><code>code_generation</code></td><td><strong>Code</strong> column</td></tr>
       <tr><td><code>code_schema</code></td><td><code>code_generation_schema</code></td><td><strong>Code + Schema</strong> column</td></tr>
-      <tr><td><code>answer_schema</code></td><td><code>direct_prompting_schema</code></td><td>(not in our report)</td></tr>
+      <tr><td><code>answer_schema</code></td><td><code>direct_prompting_schema</code></td><td><strong>Answer + Schema</strong> column</td></tr>
     </tbody>
   </table>
 </div></div>
@@ -584,8 +584,10 @@ python main.py --method self_correction --model gptoss</code></pre>
       <th colspan="3">Code</th>
       <th colspan="3">Code + Schema</th>
       <th colspan="3">Answer</th>
+      <th colspan="3">Answer + Schema</th>
     </tr>
     <tr>
+      <th>EM</th><th>Judge</th><th>Contain</th>
       <th>EM</th><th>Judge</th><th>Contain</th>
       <th>EM</th><th>Judge</th><th>Contain</th>
       <th>EM</th><th>Judge</th><th>Contain</th>
@@ -595,15 +597,18 @@ python main.py --method self_correction --model gptoss</code></pre>
     <tr><td>Granite-3.3-8B</td>
         <td class="num">0.325</td><td class="num">0.41</td><td class="num">0.33</td>
         <td class="num">0.451</td><td class="num">0.53</td><td class="num">0.46</td>
-        <td class="num"><strong>0.519</strong></td><td class="num">0.61</td><td class="num">0.57</td></tr>
+        <td class="num"><strong>0.519</strong></td><td class="num">0.61</td><td class="num">0.57</td>
+        <td class="num">0.380</td><td class="num">0.45</td><td class="num">0.42</td></tr>
     <tr><td>GPT-OSS-20B</td>
         <td class="num">0.615</td><td class="num">0.76</td><td class="num">0.62</td>
         <td class="num"><strong>0.723</strong></td><td class="num">0.85</td><td class="num">0.74</td>
-        <td class="num">0.260</td><td class="num">0.44</td><td class="num">0.59</td></tr>
+        <td class="num">0.260</td><td class="num">0.44</td><td class="num">0.59</td>
+        <td class="num">0.270</td><td class="num">0.46</td><td class="num">0.61</td></tr>
     <tr><td>Devstral-Small-24B</td>
         <td class="num">0.672</td><td class="num">0.75</td><td class="num">0.68</td>
         <td class="num"><strong>0.720</strong></td><td class="num">0.82</td><td class="num">0.73</td>
-        <td class="num">0.649</td><td class="num">0.75</td><td class="num">0.70</td></tr>
+        <td class="num">0.649</td><td class="num">0.75</td><td class="num">0.70</td>
+        <td class="num">0.650</td><td class="num">0.75</td><td class="num">0.70</td></tr>
   </tbody>
 </table>
 <p class="lede"><strong>Bold</strong> = the strongest baseline setting for that model. That is the row labelled "Baseline" in the next table.</p>
